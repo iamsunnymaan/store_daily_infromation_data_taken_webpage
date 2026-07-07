@@ -7,10 +7,6 @@ public record StoreAccessResponse(
     String stores,
     String city,
     String state,
-    String region,
-    String channel,
-    String subChannel,
-    String location,
     BigDecimal todayTarget
 ) {
 }

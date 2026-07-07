@@ -29,6 +29,17 @@ public class VisitService {
 
   @Transactional
   public VisitSubmissionResponse submit(VisitSubmissionRequest request) {
+    if (request.visitDate() == null) {
+      throw new IllegalArgumentException("Visit date is required.");
+    }
+    
+    java.time.LocalDate today = java.time.LocalDate.now();
+    java.time.LocalDate minDate = today.minusDays(2);
+    
+    if (request.visitDate().isBefore(minDate) || request.visitDate().isAfter(today)) {
+      throw new IllegalArgumentException("Data entry is only allowed for the last 2 days and today.");
+    }
+
     siteMasterRepository.findBysitestorecodeAndAccessCode(request.sitestorecode(), request.accessCode())
         .orElseThrow(() -> new IllegalArgumentException("Invalid access code or store code."));
 

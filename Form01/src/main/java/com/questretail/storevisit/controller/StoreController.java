@@ -20,8 +20,9 @@ public class StoreController {
   @GetMapping("/validate")
   public StoreAccessResponse validate(
       @RequestParam String site_store_code,
-      @RequestParam String accessCode
+      @RequestParam String accessCode,
+      @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate visitDate
   ) {
-    return storeAccessService.validateAccess(site_store_code, accessCode);
+    return storeAccessService.validateAccess(site_store_code, accessCode, visitDate);
   }
 }

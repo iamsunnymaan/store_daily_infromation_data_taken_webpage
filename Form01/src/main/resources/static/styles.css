@@ -334,6 +334,7 @@ input[readonly] {
 
 .choice-grid label,
 .check-list label {
+  /* background-color: bisque; */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -341,7 +342,7 @@ input[readonly] {
   padding: 7px 9px;
   border: 1px solid #d9e1ea;
   border-radius: 7px;
-  background: #fff;
+  background: #f8fafc;
   font-weight: 600;
 }
 
@@ -356,11 +357,26 @@ input[readonly] {
 
 .root-cause-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   align-items: start;
 }
 
+#decreaseRoot{
+  border: 1px solid #d9e1ea;
+  border-radius: 8px;
+  padding: 10px 0px 0px 13px;
+}
+#IncreaseRoot{
+  border: 1px solid #d9e1ea;
+  border-radius: 8px;
+  padding: 10px 0px 0px 13px;
+}
+.check-section{
+  border: 1px solid #d9e1ea;
+  border-radius: 8px;
+  padding: 10px 0px 0px 13px;
+}
 .check-list {
   display: grid;
   gap: 6px;

@@ -149,10 +149,6 @@ const elements = {
   displayStoreName: document.querySelector("#displayStoreName"),
   city: document.querySelector("#city"),
   state: document.querySelector("#state"),
-  region: document.querySelector("#region"),
-  channel: document.querySelector("#channel"),
-  subChannel: document.querySelector("#subChannel"),
-  location: document.querySelector("#location"),
   fetchStore: document.querySelector("#fetchStore"),
   fetchMessage: document.querySelector("#fetchMessage"),
   step1: document.querySelector("#step1"),
@@ -177,7 +173,22 @@ const elements = {
 
 function setDefaultDate() {
   const today = new Date();
-  elements.visitDate.value = today.toISOString().slice(0, 10);
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+  
+  // Last 2 days
+  const twoDaysAgo = new Date();
+  twoDaysAgo.setDate(today.getDate() - 2);
+  const minYear = twoDaysAgo.getFullYear();
+  const minMonth = String(twoDaysAgo.getMonth() + 1).padStart(2, '0');
+  const minDay = String(twoDaysAgo.getDate()).padStart(2, '0');
+  const minDateStr = `${minYear}-${minMonth}-${minDay}`;
+
+  elements.visitDate.setAttribute("min", minDateStr);
+  elements.visitDate.setAttribute("max", todayStr);
+  elements.visitDate.value = todayStr;
   updateVisitDay();
 }
 
@@ -233,9 +244,22 @@ function renderAccordion() {
       return;
     }
     const item = button.closest(".accordion-item");
-    const willOpen = !item.classList.contains("open");
-    item.classList.toggle("open", willOpen);
-    button.setAttribute("aria-expanded", String(willOpen));
+    const isOpen = item.classList.contains("open");
+
+    if (!isOpen) {
+      // Close all other accordion items
+      accordion.querySelectorAll(".accordion-item").forEach((otherItem) => {
+        otherItem.classList.remove("open");
+        otherItem.querySelector(".accordion-button").setAttribute("aria-expanded", "false");
+      });
+      // Open this one
+      item.classList.add("open");
+      button.setAttribute("aria-expanded", "true");
+    } else {
+      // Toggle off if already open (optional, but issue says "only one section should remain expanded")
+      item.classList.remove("open");
+      button.setAttribute("aria-expanded", "false");
+    }
   });
 }
 
@@ -251,6 +275,7 @@ function formatMoney(value) {
 }
 
 function calculateKpis() {
+  console.log("[DEBUG_LOG] calculateKpis called. storeAccess target:", storeAccess?.todayTarget);
   const sales = numberValue("#todaySales");
   const target = storeAccess?.todayTarget ?? 0;
   const transactions = numberValue("#totalTransactions");
@@ -263,6 +288,31 @@ function calculateKpis() {
   elements.footfallConversion.value = `${conversion.toFixed(2)}%`;
   elements.atv.value = transactions > 0 ? formatMoney(sales / transactions) : "0";
   elements.upt.value = transactions > 0 ? (units / transactions).toFixed(2) : "0";
+
+  if (storeAccess) {
+    console.log("[DEBUG_LOG] calculateKpis using target:", storeAccess.todayTarget);
+    updateSalesStatus(storeAccess.todayTarget);
+  }
+}
+
+function updateSalesStatus(target) {
+  if (!target || target <= 0) return;
+  const sales = numberValue("#todaySales");
+  const achievement = (sales / target) * 100;
+  
+  let status = "";
+  if (achievement >= 100) status = "Above Target";
+  else if (achievement >= 95) status = "On Target";
+  else if (achievement >= 50) status = "Below Target";
+  else if (sales > 0) status = "Very Poor";
+
+  if (status) {
+    const radio = document.querySelector(`input[name="salesStatus"][value="${status}"]`);
+    if (radio) {
+      radio.checked = true;
+      updateRootCauseVisibility();
+    }
+  }
 }
 
 async function fetchStore() {
@@ -270,6 +320,8 @@ async function fetchStore() {
   const site = elements.site.value.trim();
   const accessCode = elements.accessCode.value.trim();
   const visitDate = elements.visitDate.value;
+
+  console.log("[DEBUG_LOG] fetchStore called with site:", site, "accessCode:", accessCode, "visitDate:", visitDate);
 
   if (!site || !accessCode || !visitDate) {
     setMessage("Please fill all fields.", true, "fetch");
@@ -280,7 +332,11 @@ async function fetchStore() {
   elements.fetchStore.textContent = "Fetching...";
 
   try {
-    const params = new URLSearchParams({ site_store_code: site, accessCode });
+    const params = new URLSearchParams({ 
+      site_store_code: site, 
+      accessCode,
+      visitDate
+    });
     const response = await fetch(`/api/stores/validate?${params}`);
     
     if (response.status === 401 || response.status === 403) {
@@ -296,22 +352,23 @@ async function fetchStore() {
     const body = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      setMessage(body.message || "No data available for this visit date.", true, "fetch");
+      const errorMessage = body.message || "An error occurred on the server.";
+      setMessage(errorMessage, true, "fetch");
       return;
     }
 
     storeAccess = body;
+    console.log("[DEBUG_LOG] Fetch response body:", body);
     elements.storeName.value = body.stores || "";
     elements.displayStoreName.textContent = body.stores || "Store Visit Report";
     elements.city.value = body.city || "";
     elements.state.value = body.state || "";
-    elements.region.value = body.region || "";
-    elements.channel.value = body.channel || "";
-    elements.subChannel.value = body.subChannel || "";
-    elements.location.value = body.location || "";
+    console.log("[DEBUG_LOG] Today Target from API:", body.todayTarget);
     elements.targetView.textContent = formatMoney(Number(body.todayTarget || 0));
     
+    // Auto-select sales status based on achievement
     calculateKpis();
+    updateSalesStatus(body.todayTarget);
 
     // Transition to Step 2
     elements.step1.style.display = "none";
@@ -446,7 +503,12 @@ renderLists();
 renderAccordion();
 setDefaultDate();
 
-elements.visitDate.addEventListener("change", updateVisitDay);
+elements.visitDate.addEventListener("change", () => {
+  updateVisitDay();
+  if (storeAccess && elements.site.value.trim() && elements.accessCode.value.trim()) {
+    fetchStore();
+  }
+});
 elements.fetchStore.addEventListener("click", fetchStore);
 elements.todaySales.addEventListener("input", calculateKpis);
 elements.totalTransactions.addEventListener("input", calculateKpis);

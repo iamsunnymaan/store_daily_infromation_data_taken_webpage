@@ -24,18 +24,6 @@ public class SiteMaster {
   @Column(name = "State")
   private String state;
 
-  @Column(name = "Region")
-  private String region;
-
-  @Column(name = "Channel")
-  private String channel;
-
-  @Column(name = "SubChanne")
-  private String subChannel;
-
-  @Column(name = "Location")
-  private String location;
-
   @Column(name = "access_code")
   private String accessCode;
 
@@ -53,22 +41,6 @@ public class SiteMaster {
 
   public String getState() {
     return state;
-  }
-
-  public String getRegion() {
-    return region;
-  }
-
-  public String getChannel() {
-    return channel;
-  }
-
-  public String getSubChannel() {
-    return subChannel;
-  }
-
-  public String getLocation() {
-    return location;
   }
 
   public String getAccessCode() {
