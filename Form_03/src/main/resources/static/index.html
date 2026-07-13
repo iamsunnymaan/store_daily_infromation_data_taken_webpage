@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Visit Information</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <nav class="navbar">
+      <button id="navFormBtn" class="nav-button">Form</button>
+      <button id="navHistoryBtn" class="nav-button">Log History</button>
+    </nav>
+    <main id="appShell" class="app-shell">
+
+      <div id="formSection" class="fade-in">
+
+
+
+
+        <form id="visitForm" class="form-stack">
+          <input type="hidden" id="visitDay" name="visitDay">
+          <section class="section">
+            <div class="section-title">
+              <span class="icon">i</span>
+              <div>
+                <h2>Store Information</h2>
+              </div>
+            </div>
+
+            <!-- Row 2: Dynamic Banner -->
+            <div id="storeBanner" class="dynamic-banner">
+              <h1 id="displayStoreName">Store Name</h1>
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+            <!-- Row 3: Data & Actions Form -->
+            <div class="data-actions-form">
+              <label> Visit date
+                <input id="visitDate" name="visitDate" type="date" required>
+              </label>
+              <label>
+                Site / store code
+                <input id="site" name="site" type="text" required>
+              </label>
+              <label>
+                Access code
+                <input id="accessCode" name="accessCode" type="password" required autocomplete="off">
+              </label>
+              <button class="primary-button" id="fetchStore" type="button">Fetch</button>
+              <label> Store name
+                <input id="storeName" name="storeName" type="text" readonly>
+              </label>
+              <label> City
+                <input id="city" type="text" readonly>
+              </label>
+              <label> State
+                <input id="state" type="text" readonly>
+              </label>
+            </div>
+            <div id="fetchMessage" class="status-message"></div>
+          </section>
+
+          <div id="protectedSections" hidden>
+          <section class="section">
+            <div class="section-title">
+              <span class="icon">k</span>
+              <div>
+                <h2>Performance KPI Framework</h2>
+                <p>Sales, productivity, staff availability, and root-cause capture.</p>
+              </div>
+            </div>
+
+            <div class="kpi-layout">
+              <article class="panel">
+                <h3><span class="icon small">f</span> Field Sales Entry</h3>
+                <label class="target-box">
+                  Today's Sales (INR)
+                  <input id="todaySales" name="todaySales" type="number" min="0" step="0.01" required>
+                  <span>Today target: <strong id="targetView">0</strong></span>
+                  <span>Achievement: <strong id="achievementView">0%</strong></span>
+                </label>
+                <label>
+                  Total transactions
+                  <input id="totalTransactions" name="totalTransactions" type="number" min="0" step="1" required>
+                </label>
+                <label>
+                  Footfall
+                  <input id="footfall" name="footfall" type="number" min="0" step="1" required>
+                </label>
+                <label>
+                  Footfall conversion %
+                  <input id="footfallConversion" type="text" readonly>
+                </label>
+                <label>
+                  Total units sold
+                  <input id="totalUnitsSold" name="totalUnitsSold" type="number" min="0" step="1" required>
+                </label>
+              </article>
+
+              <div class="panel-column">
+                <article class="panel compact">
+                  <h3><span class="icon small">p</span> Productivity KPI</h3>
+                  <label>
+                    ATV
+                    <input id="atv" type="text" readonly>
+                  </label>
+                  <label>
+                    UPT
+                    <input id="upt" type="text" readonly>
+                  </label>
+                </article>
+
+                <article class="panel compact">
+                  <h3><span class="icon small">s</span> Sales status</h3>
+                  <p>Today sales behaviour.</p>
+                  <div class="choice-grid" id="salesStatusGroup">
+                    <label><input type="radio" name="salesStatus" value="Above Target" required> Excellent</label>
+                    <label><input type="radio" name="salesStatus" value="On Target"> Good</label>
+                    <label><input type="radio" name="salesStatus" value="Below Target"> Average</label>
+                    <label><input type="radio" name="salesStatus" value="Very Poor"> Weak</label>
+                  </div>
+                </article>
+
+                <article class="panel compact">
+                  <h3><span class="icon small">a</span> Available Staff Count Today</h3>
+                  <label>
+                    Planned
+                    <input id="plannedStaffCount" name="plannedStaffCount" type="number" min="0" step="1">
+                  </label>
+                  <label>
+                    Actual present
+                    <input id="actualPresentStaffCount" name="actualPresentStaffCount" type="number" min="0" step="1">
+                  </label>
+                </article>
+              </div>
+
+              <article class="panel root-panel" id="rootCausePanel" hidden>
+                <h3><span class="icon small">r</span> Root Cause</h3>
+                <p>Select multiple reasons from each category to support root cause analysis.</p>
+                <div class="root-cause-grid">
+                  <div id="decreaseRoot" class="check-section">
+                    <h4>Root Cause (For Decrease Sales)</h4>
+                    <div class="check-list" data-list="reasonsForDecrease"></div>
+                  </div>
+                  <div id="increaseRoot" class="check-section">
+                    <h4>Root Cause (For Increase Sales)</h4>
+                    <div class="check-list" data-list="reasonsForIncrease"></div>
+                  </div>
+                  <div class="check-section">
+                    <h4>Action Taken by Store Team</h4>
+                    <div class="check-list" data-list="actionTakenByStoreTeam"></div>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-title">
+              <span class="icon">d</span>
+              <div>
+                <h2>Department Review</h2>
+                <p>Department issues, top products availability, and improvement support.</p>
+              </div>
+            </div>
+
+            <div class="department-layout">
+              <article class="panel">
+                <h3><span class="icon small">m</span> Departments Related Issue</h3>
+                <p>Today, did the store face mall, project, VM, product, or merchandise issues?</p>
+                <div class="accordion" id="departmentAccordion"></div>
+              </article>
+
+              <article class="panel">
+                <h3><span class="icon small">t</span> Top Products Availability Check</h3>
+                <p>Tick products which were out of stock today.</p>
+                <div class="check-list product-list" data-list="outOfStockProducts"></div>
+              </article>
+
+              <article class="panel">
+                <h3><span class="icon small">g</span> Sales Improvement Suggestions</h3>
+                <p>What support is required to improve sales?</p>
+                <div class="check-list limited-list" data-list="salesImprovementSuggestions"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-title">
+              <span class="icon">n</span>
+              <div>
+                <h2>Remarks</h2>
+              </div>
+            </div>
+            <textarea id="remarks" name="remarks" rows="3" placeholder="Enter short specific field notes or operational adjustments observations here..."></textarea>
+            <div class="form-actions">
+              <div class="submit-wrapper">
+                <button class="primary-button" id="submitBtn" type="submit">Submit</button>
+                <div id="submitSpinner" class="submit-spinner" style="display: none;"></div>
+              </div>
+              <p id="formMessage" role="status"></p>
+            </div>
+          </section>
+          </div>
+        </form>
+      </div>
+
+      <div id="successModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <p>Data saved successfully</p>
+          <button id="modalOkBtn" class="primary-button">OK</button>
+        </div>
+      </div>
+
+      <div id="historySection" class="fade-in" hidden>
+        <section class="section">
+          <h2>Log History</h2>
+          <p>History data will be displayed here.</p>
+        </section>
+      </div>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
