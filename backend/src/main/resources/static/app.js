@@ -481,6 +481,523 @@ if (dsrSubmitBtn) {
   });
 }
 
+const dsrReportTableBody = document.getElementById("dsrReportTableBody");
+const dsrReportEmptyMessage = document.getElementById("dsrReportEmptyMessage");
+
+const reportFilterModeToggle = document.getElementById("reportFilterModeToggle");
+const reportFilterBody = document.getElementById("reportFilterBody");
+const reportFilterClearBtn = document.getElementById("reportFilterClearBtn");
+
+let reportFilterOpen = false;
+let reportRangeType = "date";
+let reportDateRange = { from: null, to: null };
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function lastDayOfMonth(year, month) {
+  return new Date(year, month, 0).getDate();
+}
+
+function renderReportRangeInputs() {
+  const wrap = document.getElementById("reportRangeInputs");
+  if (!wrap) return;
+
+  if (reportRangeType === "month") {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`;
+    wrap.innerHTML = `
+      <input type="month" class="filter-range-input" id="reportFromMonth" value="${currentMonth}">
+      <span class="filter-range-sep">to</span>
+      <input type="month" class="filter-range-input" id="reportToMonth" value="${currentMonth}">
+    `;
+    const fromInput = document.getElementById("reportFromMonth");
+    const toInput = document.getElementById("reportToMonth");
+    const trigger = () => {
+      if (!fromInput.value || !toInput.value) return;
+      const [fy, fm] = fromInput.value.split("-").map(Number);
+      const [ty, tm] = toInput.value.split("-").map(Number);
+      const [sy, sm, ey, em] = (fy * 12 + fm) <= (ty * 12 + tm) ? [fy, fm, ty, tm] : [ty, tm, fy, fm];
+      reportDateRange = { from: `${sy}-${pad2(sm)}-01`, to: `${ey}-${pad2(em)}-${pad2(lastDayOfMonth(ey, em))}` };
+      loadDsrReport();
+    };
+    fromInput.addEventListener("change", trigger);
+    toInput.addEventListener("change", trigger);
+    trigger();
+  } else if (reportRangeType === "year") {
+    const thisYear = new Date().getFullYear();
+    wrap.innerHTML = `
+      <input type="number" class="filter-range-input" id="reportFromYear" value="${thisYear}" min="2000" max="2100">
+      <span class="filter-range-sep">to</span>
+      <input type="number" class="filter-range-input" id="reportToYear" value="${thisYear}" min="2000" max="2100">
+    `;
+    const fromInput = document.getElementById("reportFromYear");
+    const toInput = document.getElementById("reportToYear");
+    const trigger = () => {
+      const from = Number(fromInput.value);
+      const to = Number(toInput.value);
+      if (!from || !to) return;
+      const [lo, hi] = from <= to ? [from, to] : [to, from];
+      reportDateRange = { from: `${lo}-01-01`, to: `${hi}-12-31` };
+      loadDsrReport();
+    };
+    fromInput.addEventListener("change", trigger);
+    toInput.addEventListener("change", trigger);
+    trigger();
+  } else {
+    const today = new Date();
+    const monthStart = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-01`;
+    const monthEnd = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(lastDayOfMonth(today.getFullYear(), today.getMonth() + 1))}`;
+    wrap.innerHTML = `
+      <input type="date" class="filter-range-input" id="reportFromDate" value="${monthStart}">
+      <span class="filter-range-sep">to</span>
+      <input type="date" class="filter-range-input" id="reportToDate" value="${monthEnd}">
+    `;
+    const fromInput = document.getElementById("reportFromDate");
+    const toInput = document.getElementById("reportToDate");
+    const trigger = () => {
+      if (!fromInput.value || !toInput.value) return;
+      const [from, to] = fromInput.value <= toInput.value ? [fromInput.value, toInput.value] : [toInput.value, fromInput.value];
+      reportDateRange = { from, to };
+      loadDsrReport();
+    };
+    fromInput.addEventListener("change", trigger);
+    toInput.addEventListener("change", trigger);
+    trigger();
+  }
+}
+
+function renderReportFilterBody() {
+  if (!reportFilterOpen) {
+    reportFilterBody.innerHTML = "";
+    reportDateRange = { from: null, to: null };
+    reportFilterClearBtn.hidden = true;
+    loadDsrReport();
+    return;
+  }
+
+  reportFilterBody.innerHTML = `
+    <div class="pill-toggle" id="reportRangeTypeToggle">
+      <span class="pill-toggle-indicator"></span>
+      <button type="button" class="pill-toggle-btn" data-range-type="date">By Date</button>
+      <button type="button" class="pill-toggle-btn" data-range-type="month">By Month</button>
+      <button type="button" class="pill-toggle-btn" data-range-type="year">By Year</button>
+    </div>
+    <div class="filter-range-inputs" id="reportRangeInputs"></div>
+  `;
+
+  const toggle = document.getElementById("reportRangeTypeToggle");
+  const buttons = [...toggle.querySelectorAll(".pill-toggle-btn")];
+  const indicator = toggle.querySelector(".pill-toggle-indicator");
+
+  function setActiveRangeType(type) {
+    reportRangeType = type;
+    buttons.forEach((b) => b.classList.toggle("active", b.dataset.rangeType === type));
+    const index = buttons.findIndex((b) => b.dataset.rangeType === type);
+    if (indicator && index >= 0) {
+      indicator.style.transform = `translateX(${index * 100}%)`;
+    }
+    renderReportRangeInputs();
+  }
+
+  buttons.forEach((btn) => btn.addEventListener("click", () => setActiveRangeType(btn.dataset.rangeType)));
+  setActiveRangeType(reportRangeType);
+
+  reportFilterClearBtn.hidden = false;
+}
+
+if (reportFilterModeToggle) {
+  reportFilterModeToggle.querySelectorAll(".filter-mode-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      reportFilterOpen = !reportFilterOpen;
+      btn.classList.toggle("active", reportFilterOpen);
+      renderReportFilterBody();
+    });
+  });
+}
+
+if (reportFilterClearBtn) {
+  reportFilterClearBtn.addEventListener("click", () => {
+    reportFilterOpen = false;
+    reportFilterModeToggle?.querySelector(".filter-mode-btn")?.classList.remove("active");
+    renderReportFilterBody();
+  });
+}
+
+const calendarGrid = document.getElementById("calendarGrid");
+const calendarMonthLabel = document.getElementById("calendarMonthLabel");
+const calendarPrevBtn = document.getElementById("calendarPrevBtn");
+const calendarNextBtn = document.getElementById("calendarNextBtn");
+const calendarCountSubmitted = document.getElementById("calendarCountSubmitted");
+const calendarCountMissed = document.getElementById("calendarCountMissed");
+const calendarCountClosed = document.getElementById("calendarCountClosed");
+
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const calendarToday = new Date();
+let calendarYear = calendarToday.getFullYear();
+let calendarMonth = calendarToday.getMonth();
+
+function salesStatusClass(status) {
+  const s = (status || "").toLowerCase();
+  if (s === "above target") return "sales-good";
+  if (s === "on target") return "sales-neutral";
+  if (s === "below target") return "sales-warning";
+  if (s === "very poor") return "sales-critical";
+  return "";
+}
+
+function buildDayTooltip(status, salesEntries) {
+  if (salesEntries && salesEntries.length) {
+    return salesEntries.map((entry) => {
+      const parts = [entry.storeCode || "Store"];
+      if (entry.salesStatus) parts.push(entry.salesStatus);
+      if (entry.todaySale !== null && entry.todaySale !== undefined) parts.push(`₹${formatReportNumber(entry.todaySale)}`);
+      return parts.join(" — ");
+    }).join("\n");
+  }
+  if (status === "missed") return "Not submitted";
+  if (status === "closed") return "Store closed";
+  return "";
+}
+
+async function loadCalendar() {
+  if (!calendarGrid) return;
+
+  calendarMonthLabel.textContent = `${MONTH_NAMES[calendarMonth]} ${calendarYear}`;
+
+  let rows = [];
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/dsr-form`);
+    if (response.ok) rows = await response.json();
+  } catch (error) {
+    console.error("Failed to load calendar data:", error);
+  }
+
+  const statusByDate = new Map();
+  const salesInfoByDate = new Map();
+  rows.forEach((row) => {
+    if (!row.visitDate) return;
+    const isClosed = (row.storeStatus || "").toLowerCase() === "closed";
+    if (isClosed) {
+      statusByDate.set(row.visitDate, "closed");
+    } else if (statusByDate.get(row.visitDate) !== "closed") {
+      statusByDate.set(row.visitDate, "submitted");
+    }
+
+    if (!salesInfoByDate.has(row.visitDate)) {
+      salesInfoByDate.set(row.visitDate, []);
+    }
+    salesInfoByDate.get(row.visitDate).push({
+      storeCode: row.storeCode,
+      salesStatus: row.salesStatus,
+      todaySale: row.todaySale
+    });
+  });
+
+  const firstWeekday = new Date(calendarYear, calendarMonth, 1).getDay();
+  const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+  const todayIso = `${calendarToday.getFullYear()}-${pad2(calendarToday.getMonth() + 1)}-${pad2(calendarToday.getDate())}`;
+
+  let submittedCount = 0;
+  let missedCount = 0;
+  let closedCount = 0;
+
+  calendarGrid.innerHTML = "";
+
+  for (let i = 0; i < firstWeekday; i++) {
+    const empty = document.createElement("div");
+    empty.className = "calendar-day is-empty";
+    calendarGrid.appendChild(empty);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const iso = `${calendarYear}-${pad2(calendarMonth + 1)}-${pad2(day)}`;
+    const isFuture = iso > todayIso;
+    let status = statusByDate.get(iso);
+
+    if (!status && !isFuture) {
+      status = "missed";
+    }
+
+    if (status === "submitted") submittedCount++;
+    else if (status === "closed") closedCount++;
+    else if (status === "missed") missedCount++;
+
+    const cell = document.createElement("div");
+    cell.className = "calendar-day" + (isFuture ? " is-future" : "");
+
+    const salesEntries = salesInfoByDate.get(iso);
+    const salesClass = salesStatusClass(salesEntries?.[0]?.salesStatus);
+    if (salesClass) cell.classList.add(salesClass);
+
+    const tooltip = buildDayTooltip(status, salesEntries);
+    if (tooltip) cell.title = tooltip;
+
+    const dayNum = document.createElement("span");
+    dayNum.textContent = String(day);
+    cell.appendChild(dayNum);
+
+    if (status) {
+      const dot = document.createElement("span");
+      dot.className = `calendar-day-dot status-${status}`;
+      cell.appendChild(dot);
+    }
+
+    calendarGrid.appendChild(cell);
+  }
+
+  calendarCountSubmitted.textContent = String(submittedCount);
+  calendarCountMissed.textContent = String(missedCount);
+  calendarCountClosed.textContent = String(closedCount);
+}
+
+if (calendarPrevBtn) {
+  calendarPrevBtn.addEventListener("click", () => {
+    calendarMonth -= 1;
+    if (calendarMonth < 0) {
+      calendarMonth = 11;
+      calendarYear -= 1;
+    }
+    loadCalendar();
+  });
+}
+
+if (calendarNextBtn) {
+  calendarNextBtn.addEventListener("click", () => {
+    calendarMonth += 1;
+    if (calendarMonth > 11) {
+      calendarMonth = 0;
+      calendarYear += 1;
+    }
+    loadCalendar();
+  });
+}
+
+function formatReportNumber(value) {
+  if (value === null || value === undefined || value === "") return "—";
+  return Number(value).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+}
+
+function escapeHtml(value) {
+  const div = document.createElement("div");
+  div.textContent = value ?? "";
+  return div.innerHTML;
+}
+
+function renderDsrReportRows(rows) {
+  if (!dsrReportTableBody) return;
+  dsrReportTableBody.innerHTML = "";
+
+  if (!rows.length) {
+    dsrReportEmptyMessage?.classList.remove("hidden");
+    return;
+  }
+  dsrReportEmptyMessage?.classList.add("hidden");
+
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(row.visitDate) || "—"}</td>
+      <td>${escapeHtml(row.storeCode) || "—"}</td>
+      <td>${escapeHtml(row.storeName) || "—"}</td>
+      <td>${formatReportNumber(row.todaySale)}</td>
+      <td>${row.totalTransaction ?? "—"}</td>
+      <td>${row.footfall ?? "—"}</td>
+      <td>${row.totalUnitSold ?? "—"}</td>
+      <td>${formatReportNumber(row.atv)}</td>
+      <td>${formatReportNumber(row.upt)}</td>
+      <td>${row.footfallConversion ?? "—"}</td>
+      <td>${escapeHtml(row.salesStatus) || "—"}</td>
+      <td>${escapeHtml(row.storeStatus) || "—"}</td>
+      <td>${escapeHtml(row.remark) || "—"}</td>
+    `;
+    dsrReportTableBody.appendChild(tr);
+  });
+}
+
+function setKpiText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function renderDsrKpis(rows) {
+  if (!rows.length) {
+    ["kpiTotalSales", "kpiTotalTransactions", "kpiTotalFootfall", "kpiAvgAtv", "kpiAvgUpt", "kpiAvgConversion", "kpiSubmissions"]
+      .forEach((id) => setKpiText(id, "—"));
+    return;
+  }
+
+  const sum = (key) => rows.reduce((total, row) => total + (Number(row[key]) || 0), 0);
+  const avg = (key) => {
+    const values = rows.map((row) => Number(row[key])).filter((value) => !Number.isNaN(value) && value !== null);
+    if (!values.length) return null;
+    return values.reduce((total, value) => total + value, 0) / values.length;
+  };
+
+  setKpiText("kpiTotalSales", `₹${formatReportNumber(sum("todaySale"))}`);
+  setKpiText("kpiTotalTransactions", formatReportNumber(sum("totalTransaction")));
+  setKpiText("kpiTotalFootfall", formatReportNumber(sum("footfall")));
+  setKpiText("kpiAvgAtv", `₹${formatReportNumber(avg("atv"))}`);
+  setKpiText("kpiAvgUpt", formatReportNumber(avg("upt")));
+  setKpiText("kpiAvgConversion", avg("footfallConversion") !== null ? `${formatReportNumber(avg("footfallConversion"))}%` : "—");
+  setKpiText("kpiSubmissions", String(rows.length));
+}
+
+function splitCsvField(value) {
+  if (!value) return [];
+  return value.split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function countOccurrences(rows, fields, excludeValues = []) {
+  const counts = new Map();
+  rows.forEach((row) => {
+    fields.forEach((field) => {
+      splitCsvField(row[field]).forEach((item) => {
+        if (excludeValues.includes(item)) return;
+        counts.set(item, (counts.get(item) || 0) + 1);
+      });
+    });
+  });
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function getChartColor(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+const chartInstances = {};
+
+function renderChart(canvasId, config) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || typeof Chart === "undefined") return;
+
+  if (chartInstances[canvasId]) {
+    chartInstances[canvasId].destroy();
+  }
+  chartInstances[canvasId] = new Chart(canvas, config);
+}
+
+function baseBarOptions(gridColor, textColor) {
+  return {
+    indexAxis: "y",
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+      y: { grid: { display: false }, ticks: { color: textColor } }
+    }
+  };
+}
+
+function renderTopReasonBarChart(canvasId, entries, color) {
+  const gridColor = getChartColor("--chart-grid");
+  const textColor = getChartColor("--color-text-secondary");
+  const top = entries.slice(0, 8);
+
+  renderChart(canvasId, {
+    type: "bar",
+    data: {
+      labels: top.map(([label]) => label),
+      datasets: [{ data: top.map(([, count]) => count), backgroundColor: color, borderRadius: 4, barThickness: 16 }]
+    },
+    options: baseBarOptions(gridColor, textColor)
+  });
+}
+
+function renderSalesTrendChart(rows) {
+  const gridColor = getChartColor("--chart-grid");
+  const textColor = getChartColor("--color-text-secondary");
+  const seriesColor = getChartColor("--chart-series-1");
+
+  const trendGroupKey = (visitDate) => {
+    if (reportFilterOpen && reportRangeType === "month") return visitDate.slice(0, 7);
+    if (reportFilterOpen && reportRangeType === "year") return visitDate.slice(0, 4);
+    return visitDate;
+  };
+
+  const totalsByDate = new Map();
+  rows.forEach((row) => {
+    if (!row.visitDate) return;
+    const key = trendGroupKey(row.visitDate);
+    totalsByDate.set(key, (totalsByDate.get(key) || 0) + (Number(row.todaySale) || 0));
+  });
+  const dates = [...totalsByDate.keys()].sort();
+
+  renderChart("salesTrendChart", {
+    type: "line",
+    data: {
+      labels: dates,
+      datasets: [{
+        data: dates.map((date) => totalsByDate.get(date)),
+        borderColor: seriesColor,
+        backgroundColor: seriesColor,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderWidth: 2,
+        tension: 0.25,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: textColor } },
+        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } }
+      }
+    }
+  });
+}
+
+function renderReportAnalytics(rows) {
+  if (typeof Chart === "undefined") return;
+
+  renderSalesTrendChart(rows);
+  renderTopReasonBarChart("reasonsIncreaseChart", countOccurrences(rows, ["rcIc"]), getChartColor("--chart-status-good"));
+  renderTopReasonBarChart("reasonsDecreaseChart", countOccurrences(rows, ["rcDc"]), getChartColor("--chart-status-critical"));
+  renderTopReasonBarChart("actionTakenChart", countOccurrences(rows, ["atbs"]), getChartColor("--chart-series-1"));
+  renderTopReasonBarChart(
+    "issuesChart",
+    countOccurrences(rows, ["driMmr", "driPr", "driVm", "driProductR", "driMr", "driOther"], ["No Issue"]),
+    getChartColor("--chart-status-serious")
+  );
+  renderTopReasonBarChart("oosChart", countOccurrences(rows, ["tpvc"]), getChartColor("--chart-status-warning"));
+}
+
+async function loadDsrReport() {
+  if (!dsrReportTableBody) return;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/dsr-form`);
+    if (!response.ok) throw new Error(`Failed to load report (${response.status})`);
+    let rows = await response.json();
+
+    if (reportDateRange.from) {
+      rows = rows.filter((row) => row.visitDate && row.visitDate >= reportDateRange.from);
+    }
+    if (reportDateRange.to) {
+      rows = rows.filter((row) => row.visitDate && row.visitDate <= reportDateRange.to);
+    }
+
+    rows.sort((a, b) => (b.visitDate || "").localeCompare(a.visitDate || "") || (b.transactionalId || 0) - (a.transactionalId || 0));
+    renderDsrReportRows(rows);
+    renderDsrKpis(rows);
+    renderReportAnalytics(rows);
+  } catch (error) {
+    console.error("Failed to load DSR report:", error);
+    renderDsrReportRows([]);
+    renderDsrKpis([]);
+  }
+}
+
+document.querySelectorAll('[data-page="dsr-report"]').forEach((link) => {
+  link.addEventListener("click", loadDsrReport);
+  link.addEventListener("click", loadCalendar);
+});
+
 sidebarCollapseToggle.addEventListener("click", () => {
   const collapsed = sidebar.classList.toggle("collapsed");
   sidebarCollapseIcon.classList.toggle("bi-chevron-left", !collapsed);

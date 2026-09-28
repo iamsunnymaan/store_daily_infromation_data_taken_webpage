@@ -6,6 +6,7 @@
     <title>Store Form</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
   </head>
   <body>
     <div class="app-shell">
@@ -26,15 +27,11 @@
           <p class="sidebar-section-title">Store Form</p>
           <a href="#" class="nav-link active" data-page="dsr-form">
             <i class="bi bi-clipboard-data"></i>
-            <span class="nav-link-text">DSR-Form</span>
+            <span class="nav-link-text">Form</span>
           </a>
           <a href="#" class="nav-link" data-page="dsr-report">
             <i class="bi bi-bar-chart-line"></i>
-            <span class="nav-link-text">DSR-Report</span>
-          </a>
-          <a href="#" class="nav-link" data-page="store-information">
-            <i class="bi bi-building"></i>
-            <span class="nav-link-text">Store Information</span>
+            <span class="nav-link-text">My-Report</span>
           </a>
         </nav>
       </aside>
@@ -46,8 +43,8 @@
 
         <main class="app-main">
           <div class="view-toggle">
-            <button type="button" class="view-toggle-option active" data-page="dsr-form">DSR-Form</button>
-            <button type="button" class="view-toggle-option" data-page="dsr-report">DSR-Report</button>
+            <button type="button" class="view-toggle-option active" data-page="dsr-form">Form</button>
+            <button type="button" class="view-toggle-option" data-page="dsr-report">My-Report</button>
           </div>
 
           <section id="dsr-form" class="page active">
@@ -70,7 +67,7 @@
                 </div>
                 <button type="submit" class="form-submit-btn">
                   <i class="bi bi-box-arrow-in-right"></i>
-                  <span>Continue</span>
+                  <span>Verify</span>
                 </button>
                 <p id="storeAccessMessage" class="form-message"></p>
               </form>
@@ -362,29 +359,199 @@
 
           <section id="dsr-report" class="page">
             <div class="placeholder-page">
-              <div class="placeholder-page-header">
-                <span class="placeholder-page-icon"><i class="bi bi-bar-chart-line"></i></span>
-                <h2 class="placeholder-page-title">DSR-Report</h2>
-              </div>
-              <div class="placeholder-page-card">
-                <i class="bi bi-hourglass-split"></i>
-                <p class="placeholder-page-card-title">Nothing here yet</p>
-                <p class="placeholder-page-card-text">The DSR-Report content will be added soon.</p>
-              </div>
-            </div>
-          </section>
+              <section class="section" id="dsrFilterHeaderSection">
+                <div class="section-title">
+                  <div>
+                    <h2>Filter Header</h2>
+                  </div>
+                </div>
+              </section>
 
-          <section id="store-information" class="page">
-            <div class="placeholder-page">
-              <div class="placeholder-page-header">
-                <span class="placeholder-page-icon"><i class="bi bi-building"></i></span>
-                <h2 class="placeholder-page-title">Store Information</h2>
-              </div>
-              <div class="placeholder-page-card">
-                <i class="bi bi-hourglass-split"></i>
-                <p class="placeholder-page-card-title">Nothing here yet</p>
-                <p class="placeholder-page-card-text">The Store Information content will be added soon.</p>
-              </div>
+              <article class="panel" id="dsrFilterHeaderCard">
+                <div class="filter-row" id="dsrFilterRow">
+                  <div class="date-filter-right">
+                    <div class="filter-mode-toggle" id="reportFilterModeToggle">
+                      <button type="button" class="filter-mode-btn" data-mode="filter">
+                        <i class="bi bi-funnel"></i> Filter
+                      </button>
+                    </div>
+
+                    <div class="filter-panel">
+                      <div class="filter-body" id="reportFilterBody"></div>
+                      <button type="button" class="filter-clear-btn" id="reportFilterClearBtn" title="Clear date filter" hidden>
+                        <i class="bi bi-x-circle"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <section class="section">
+                <div class="section-title">
+                  <div>
+                    <h2>Sales KPIs</h2>
+                    <p>Aggregated across the currently filtered submissions.</p>
+                  </div>
+                </div>
+                <div class="kpi-stat-row" id="dsrKpiRow">
+                  <div class="kpi-stat-tile">
+                    <span class="kpi-stat-label">Total Sales</span>
+                    <span class="kpi-stat-value" id="kpiTotalSales">—</span>
+                  </div>
+                  <div class="kpi-stat-tile">
+                    <span class="kpi-stat-label">Total Transactions</span>
+                    <span class="kpi-stat-value" id="kpiTotalTransactions">—</span>
+                  </div>
+                  <div class="kpi-stat-tile">
+                    <span class="kpi-stat-label">Total Footfall</span>
+                    <span class="kpi-stat-value" id="kpiTotalFootfall">—</span>
+                  </div>
+                  <div class="kpi-stat-tile">
+                    <span class="kpi-stat-label">Avg ATV</span>
+                    <span class="kpi-stat-value" id="kpiAvgAtv">—</span>
+                  </div>
+                  <div class="kpi-stat-tile">
+                    <span class="kpi-stat-label">Avg UPT</span>
+                    <span class="kpi-stat-value" id="kpiAvgUpt">—</span>
+                  </div>
+                  <div class="kpi-stat-tile">
+                    <span class="kpi-stat-label">Avg Footfall Conversion</span>
+                    <span class="kpi-stat-value" id="kpiAvgConversion">—</span>
+                  </div>
+                  <div class="kpi-stat-tile">
+                    <span class="kpi-stat-label">Submissions</span>
+                    <span class="kpi-stat-value" id="kpiSubmissions">—</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="section">
+                <div class="section-title">
+                  <div>
+                    <h2>Submission Calendar</h2>
+                  </div>
+                  <div class="calendar-nav">
+                    <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Previous month">
+                      <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span class="calendar-month-label" id="calendarMonthLabel">—</span>
+                    <button type="button" class="calendar-nav-btn" id="calendarNextBtn" aria-label="Next month">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <article class="panel calendar-panel">
+                  <div class="calendar-weekdays">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                  </div>
+                  <div class="calendar-grid" id="calendarGrid"></div>
+
+                  <div class="calendar-legend">
+                    <div class="calendar-legend-item">
+                      <span class="calendar-dot calendar-dot-submitted"></span>
+                      <span>Submitted</span>
+                      <strong id="calendarCountSubmitted">0</strong>
+                    </div>
+                    <div class="calendar-legend-item">
+                      <span class="calendar-dot calendar-dot-missed"></span>
+                      <span>Not Submitted</span>
+                      <strong id="calendarCountMissed">0</strong>
+                    </div>
+                    <div class="calendar-legend-item">
+                      <span class="calendar-dot calendar-dot-closed"></span>
+                      <span>Store Closed</span>
+                      <strong id="calendarCountClosed">0</strong>
+                    </div>
+                  </div>
+                </article>
+              </section>
+
+              <section class="section">
+                <div class="section-title">
+                  <div>
+                    <h2>Sales Trend</h2>
+                    <p>Total sales by date across the filtered submissions.</p>
+                  </div>
+                </div>
+                <article class="panel chart-panel">
+                  <div class="chart-canvas-wrap"><canvas id="salesTrendChart"></canvas></div>
+                </article>
+              </section>
+
+              <section class="section">
+                <div class="section-title">
+                  <div>
+                    <h2>Reasons</h2>
+                    <p>Most frequently reported drivers behind sales movement.</p>
+                  </div>
+                </div>
+                <div class="analytics-grid">
+                  <article class="panel chart-panel">
+                    <h3><span class="icon small"><i class="bi bi-graph-up-arrow"></i></span> Top Reasons for Increase</h3>
+                    <div class="chart-canvas-wrap"><canvas id="reasonsIncreaseChart"></canvas></div>
+                  </article>
+                  <article class="panel chart-panel">
+                    <h3><span class="icon small"><i class="bi bi-graph-down-arrow"></i></span> Top Reasons for Decrease</h3>
+                    <div class="chart-canvas-wrap"><canvas id="reasonsDecreaseChart"></canvas></div>
+                  </article>
+                  <article class="panel chart-panel">
+                    <h3><span class="icon small"><i class="bi bi-clipboard-check"></i></span> Action Taken by Store Team</h3>
+                    <div class="chart-canvas-wrap"><canvas id="actionTakenChart"></canvas></div>
+                  </article>
+                </div>
+              </section>
+
+              <section class="section">
+                <div class="section-title">
+                  <div>
+                    <h2>Issues</h2>
+                    <p>Department issues and product availability gaps reported by stores.</p>
+                  </div>
+                </div>
+                <div class="analytics-grid">
+                  <article class="panel chart-panel">
+                    <h3><span class="icon small"><i class="bi bi-exclamation-triangle"></i></span> Department Issues</h3>
+                    <div class="chart-canvas-wrap"><canvas id="issuesChart"></canvas></div>
+                  </article>
+                  <article class="panel chart-panel">
+                    <h3><span class="icon small"><i class="bi bi-box-seam"></i></span> Top Out-of-Stock Products</h3>
+                    <div class="chart-canvas-wrap"><canvas id="oosChart"></canvas></div>
+                  </article>
+                </div>
+              </section>
+
+              <section class="section">
+                <div class="section-title">
+                  <div>
+                    <h2>Detailed Records</h2>
+                    <p>Every submission matching the filters above.</p>
+                  </div>
+                </div>
+                <div class="report-table-wrapper">
+                  <table class="report-table" id="dsrReportTable">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Store Code</th>
+                        <th>Store Name</th>
+                        <th>Today's Sales</th>
+                        <th>Transactions</th>
+                        <th>Footfall</th>
+                        <th>Units Sold</th>
+                        <th>ATV</th>
+                        <th>UPT</th>
+                        <th>Conv %</th>
+                        <th>Sales Status</th>
+                        <th>Store Status</th>
+                        <th>Remark</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dsrReportTableBody"></tbody>
+                  </table>
+                  <p id="dsrReportEmptyMessage" class="form-message hidden">No DSR records found.</p>
+                </div>
+              </section>
             </div>
           </section>
         </main>
