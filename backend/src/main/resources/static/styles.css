@@ -302,6 +302,12 @@ body {
   gap: 20px;
 }
 
+#dsrWorkspace {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 /* Placeholder page */
 
 .placeholder-page {
@@ -436,8 +442,9 @@ body {
 
 .info-row {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   padding: 7px 0;
   font-size: 0.8rem;
 }
@@ -449,7 +456,17 @@ body {
 
 .info-value {
   color: var(--color-text-primary);
-  text-align: right;
+  text-align: left;
+  font-weight: 600;
+}
+
+#storeInformationForm {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: none;
+  width: 100%;
+  gap: 16px 64px;
+  padding: 16px 24px;
 }
 
 .form-submit-btn {

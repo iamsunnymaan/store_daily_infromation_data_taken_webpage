@@ -67,9 +67,6 @@ if (currentDateInput) {
 }
 updateStatusSelectedDate();
 
-const FIXED_ACCESS_CODE = "DEMO123";
-const FIXED_STORE_CODE = "STORE001";
-
 const storeAccessForm = document.getElementById("storeAccessForm");
 const storeAccessMessage = document.getElementById("storeAccessMessage");
 
@@ -81,19 +78,37 @@ function setStoreAccessMessage(message, isError) {
 }
 
 if (storeAccessForm) {
-  storeAccessForm.addEventListener("submit", (event) => {
+  storeAccessForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const accessCode = document.getElementById("accessCode").value.trim();
     const storeCode = document.getElementById("storeCode").value.trim();
 
-    if (accessCode !== FIXED_ACCESS_CODE || storeCode !== FIXED_STORE_CODE) {
-      setStoreAccessMessage("Invalid access code or store code.", true);
-      return;
-    }
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/site-access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siteCode: storeCode, accessCode }),
+      });
 
-    setStoreAccessMessage("Access granted.", false);
-    console.log("Store access granted:", { accessCode, storeCode });
-    showPage("dsr-report");
+      if (!response.ok) {
+        setStoreAccessMessage("Invalid access code or store code.", true);
+        return;
+      }
+
+      const site = await response.json();
+      setStoreAccessMessage("Access granted.", false);
+      console.log("Store access granted:", site);
+
+      document.getElementById("storeName").textContent = site.storeName || "—";
+      document.getElementById("storeManager").textContent = site.sm || "—";
+      document.getElementById("storeContact").textContent = "—";
+      document.getElementById("storeAddress").textContent = site.address || "—";
+
+      document.getElementById("dsrWorkspace")?.classList.remove("hidden");
+    } catch (error) {
+      console.error("Store access check failed:", error);
+      setStoreAccessMessage("Unable to verify access right now. Please try again.", true);
+    }
   });
 }
 
@@ -373,15 +388,95 @@ if (remarkInput) {
   updateRemarkWordCount();
 }
 
+const API_BASE_URL = "http://localhost:8080";
+
 const dsrSubmitBtn = document.getElementById("dsrSubmitBtn");
 const dsrSubmitMessage = document.getElementById("dsrSubmitMessage");
 
+function setDsrSubmitMessage(message, isError) {
+  if (!dsrSubmitMessage) return;
+  dsrSubmitMessage.textContent = message;
+  dsrSubmitMessage.classList.toggle("form-message-error", isError);
+  dsrSubmitMessage.classList.toggle("form-message-success", !isError);
+}
+
+function getCheckedValues(name) {
+  return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map((input) => input.value);
+}
+
+function toNumberOrNull(value) {
+  if (value === undefined || value === null || value === "") return null;
+  const num = Number(value);
+  return Number.isNaN(num) ? null : num;
+}
+
+function buildDsrFormPayload() {
+  const storeNameValue = document.getElementById("storeName")?.textContent.trim();
+
+  return {
+    visitDate: currentDateInput?.value || null,
+    storeCode: document.getElementById("storeCode")?.value.trim() || "",
+    storeName: storeNameValue && storeNameValue !== "—" ? storeNameValue : null,
+    totalStaffCount: toNumberOrNull(document.getElementById("totalStaffCount")?.value),
+    plannedStaffCount: toNumberOrNull(document.getElementById("plannedStaffCount")?.value),
+    presentStaffCount: toNumberOrNull(document.getElementById("presentStaffCount")?.value),
+    absentStaffCount: toNumberOrNull(document.getElementById("absentStaffCount")?.value),
+    todaySales: toNumberOrNull(todaySalesInput?.value),
+    totalTransactions: toNumberOrNull(totalTransactionsInput?.value),
+    footfall: toNumberOrNull(footfallInput?.value),
+    totalUnitsSold: toNumberOrNull(totalUnitsSoldInput?.value),
+    salesStatus: document.querySelector('input[name="salesStatus"]:checked')?.value || null,
+    storeStatus: document.querySelector('input[name="storeStatus"]:checked')?.value || null,
+    storeClosedReason: storeClosedReasonInput?.value.trim() || null,
+    reasonsForIncrease: getCheckedValues("reasonsForIncrease"),
+    reasonsForDecrease: getCheckedValues("reasonsForDecrease"),
+    actionTakenByStoreTeam: getCheckedValues("actionTakenByStoreTeam"),
+    mallMarketIssues: getCheckedValues("mallMarketIssues"),
+    projectIssues: getCheckedValues("projectIssues"),
+    vmIssues: getCheckedValues("vmIssues"),
+    productIssues: getCheckedValues("productIssues"),
+    merchandiseIssues: getCheckedValues("merchandiseIssues"),
+    otherDepartmentIssues: getCheckedValues("otherDepartmentIssues"),
+    outOfStockProducts: getCheckedValues("outOfStockProducts"),
+    salesImprovementSuggestions: getCheckedValues("salesImprovementSuggestions"),
+    remark: remarkInput?.value.trim() || null
+  };
+}
+
 if (dsrSubmitBtn) {
-  dsrSubmitBtn.addEventListener("click", () => {
-    if (dsrSubmitMessage) {
-      dsrSubmitMessage.textContent = "DSR submitted successfully.";
-      dsrSubmitMessage.classList.remove("form-message-error");
-      dsrSubmitMessage.classList.add("form-message-success");
+  dsrSubmitBtn.addEventListener("click", async () => {
+    const payload = buildDsrFormPayload();
+
+    if (!payload.storeCode) {
+      setDsrSubmitMessage("Please enter the store code before submitting.", true);
+      return;
+    }
+    if (!payload.visitDate || payload.todaySales === null || payload.totalTransactions === null || payload.footfall === null || payload.totalUnitsSold === null) {
+      setDsrSubmitMessage("Please fill in date, sales, transactions, footfall, and units sold before submitting.", true);
+      return;
+    }
+
+    dsrSubmitBtn.disabled = true;
+    setDsrSubmitMessage("Submitting...", false);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/dsr-form`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        throw new Error(errorBody?.message || `Submit failed (${response.status})`);
+      }
+
+      setDsrSubmitMessage("DSR submitted successfully.", false);
+    } catch (error) {
+      console.error("DSR submit failed:", error);
+      setDsrSubmitMessage("Failed to submit DSR. Please try again.", true);
+    } finally {
+      dsrSubmitBtn.disabled = false;
     }
   });
 }
