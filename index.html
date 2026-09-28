@@ -44,14 +44,28 @@
           <section id="dsr-form" class="page active">
             <div class="placeholder-page">
               <div class="placeholder-page-header">
-                <span class="placeholder-page-icon"><i class="bi bi-clipboard-data"></i></span>
-                <h2 class="placeholder-page-title">DSR-Form</h2>
+                <span class="placeholder-page-icon"><i class="bi bi-shield-lock"></i></span>
+                <h2 class="placeholder-page-title">Store Access</h2>
               </div>
-              <div class="placeholder-page-card">
-                <i class="bi bi-hourglass-split"></i>
-                <p class="placeholder-page-card-title">Nothing here yet</p>
-                <p class="placeholder-page-card-text">The DSR-Form content will be added soon.</p>
-              </div>
+              <form class="form-card" id="storeAccessForm">
+                <div class="form-group">
+                  <label for="currentDate">Current Date</label>
+                  <input type="date" id="currentDate" name="currentDate" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                  <label for="accessCode">Access Code</label>
+                  <input type="text" id="accessCode" name="accessCode" class="form-input" placeholder="Enter access code" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                  <label for="storeCode">Store Code</label>
+                  <input type="text" id="storeCode" name="storeCode" class="form-input" placeholder="Enter store code" autocomplete="off" required>
+                </div>
+                <button type="submit" class="form-submit-btn">
+                  <i class="bi bi-box-arrow-in-right"></i>
+                  <span>Continue</span>
+                </button>
+                <p id="storeAccessMessage" class="form-message"></p>
+              </form>
             </div>
           </section>
 

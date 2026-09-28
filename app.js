@@ -31,6 +31,41 @@ sidebarToggle.addEventListener("click", () => {
 
 sidebarBackdrop.addEventListener("click", closeSidebar);
 
+const currentDateInput = document.getElementById("currentDate");
+if (currentDateInput) {
+  currentDateInput.value = new Date().toISOString().slice(0, 10);
+}
+
+const FIXED_ACCESS_CODE = "DEMO123";
+const FIXED_STORE_CODE = "STORE001";
+
+const storeAccessForm = document.getElementById("storeAccessForm");
+const storeAccessMessage = document.getElementById("storeAccessMessage");
+
+function setStoreAccessMessage(message, isError) {
+  if (!storeAccessMessage) return;
+  storeAccessMessage.textContent = message;
+  storeAccessMessage.classList.toggle("form-message-error", isError);
+  storeAccessMessage.classList.toggle("form-message-success", !isError);
+}
+
+if (storeAccessForm) {
+  storeAccessForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const accessCode = document.getElementById("accessCode").value.trim();
+    const storeCode = document.getElementById("storeCode").value.trim();
+
+    if (accessCode !== FIXED_ACCESS_CODE || storeCode !== FIXED_STORE_CODE) {
+      setStoreAccessMessage("Invalid access code or store code.", true);
+      return;
+    }
+
+    setStoreAccessMessage("Access granted.", false);
+    console.log("Store access granted:", { accessCode, storeCode });
+    showPage("dsr-report");
+  });
+}
+
 sidebarCollapseToggle.addEventListener("click", () => {
   const collapsed = sidebar.classList.toggle("collapsed");
   sidebarCollapseIcon.classList.toggle("bi-chevron-left", !collapsed);
