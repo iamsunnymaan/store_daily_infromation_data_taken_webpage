@@ -32,6 +32,10 @@
             <i class="bi bi-bar-chart-line"></i>
             <span class="nav-link-text">DSR-Report</span>
           </a>
+          <a href="#" class="nav-link" data-page="store-information">
+            <i class="bi bi-building"></i>
+            <span class="nav-link-text">Store Information</span>
+          </a>
         </nav>
       </aside>
 
@@ -41,16 +45,20 @@
         </button>
 
         <main class="app-main">
+          <div class="view-toggle">
+            <button type="button" class="view-toggle-option active" data-page="dsr-form">DSR-Form</button>
+            <button type="button" class="view-toggle-option" data-page="dsr-report">DSR-Report</button>
+          </div>
+
           <section id="dsr-form" class="page active">
             <div class="placeholder-page">
               <div class="placeholder-page-header">
-                <span class="placeholder-page-icon"><i class="bi bi-shield-lock"></i></span>
                 <h2 class="placeholder-page-title">Store Access</h2>
               </div>
               <form class="form-card" id="storeAccessForm">
                 <div class="form-group">
                   <label for="currentDate">Current Date</label>
-                  <input type="date" id="currentDate" name="currentDate" class="form-input" readonly>
+                  <input type="date" id="currentDate" name="currentDate" class="form-input">
                 </div>
                 <div class="form-group">
                   <label for="accessCode">Access Code</label>
@@ -67,6 +75,287 @@
                 <p id="storeAccessMessage" class="form-message"></p>
               </form>
             </div>
+
+            <div class="placeholder-page">
+              <div class="placeholder-page-header">
+                <h2 class="placeholder-page-title">Store Information</h2>
+              </div>
+              <div class="form-card" id="storeInformationForm">
+                <div class="info-row">
+                  <span class="info-key">Store Name</span>
+                  <span class="info-value" id="storeName">—</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Store Manager</span>
+                  <span class="info-value" id="storeManager">—</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Contact Number</span>
+                  <span class="info-value" id="storeContact">—</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Store Address</span>
+                  <span class="info-value" id="storeAddress">—</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="placeholder-page">
+              <div class="placeholder-page-header">
+                <h2 class="placeholder-page-title">Status: Selected Date <span id="statusSelectedDate">—</span></h2>
+              </div>
+
+              <div class="status-columns">
+                <div class="status-card-left">
+                  <div class="kpi-layout">
+                    <div class="panel-column">
+                      <article class="panel compact-card">
+                        <h3><span class="icon small"><i class="bi bi-cash-coin"></i></span> Field Sales Entry</h3>
+                        <label class="target-box">
+                          Today's Sales (INR)
+                          <input id="todaySales" name="todaySales" type="text" inputmode="decimal" autocomplete="off" required>
+                          <span class="target-achieve-row">
+                            <span>Target: <strong id="targetView">0</strong></span>
+                            <span>Achieved: <strong id="achievementView">0%</strong></span>
+                          </span>
+                        </label>
+                        <label>
+                          Total transactions
+                          <input id="totalTransactions" name="totalTransactions" type="number" min="0" step="1" required>
+                        </label>
+                        <label>
+                          Footfall
+                          <input id="footfall" name="footfall" type="number" min="0" step="1" required>
+                        </label>
+                        <label>
+                          Total units sold
+                          <input id="totalUnitsSold" name="totalUnitsSold" type="number" min="0" step="1" required>
+                        </label>
+                      </article>
+
+                      <article class="panel compact compact-card">
+                        <h3><span class="icon small"><i class="bi bi-people-fill"></i></span> Available Staff Count Today</h3>
+                        <div class="field-grid">
+                          <label>
+                            Total
+                            <input id="totalStaffCount" name="totalStaffCount" type="number" min="0" step="1">
+                          </label>
+                          <label>
+                            Planned
+                            <input id="plannedStaffCount" name="plannedStaffCount" type="number" min="0" step="1">
+                          </label>
+                          <label>
+                            Present
+                            <input id="presentStaffCount" name="presentStaffCount" type="number" min="0" step="1">
+                          </label>
+                          <label>
+                            Absent
+                            <input id="absentStaffCount" name="absentStaffCount" type="number" min="0" step="1">
+                          </label>
+                        </div>
+                      </article>
+                    </div>
+
+                    <div class="panel-column">
+                      <article class="panel compact">
+                        <h3><span class="icon small"><i class="bi bi-speedometer2"></i></span> Productivity KPI</h3>
+                        <label>
+                          ATV
+                          <input id="atv" type="text" readonly>
+                        </label>
+                        <label>
+                          UPT
+                          <input id="upt" type="text" readonly>
+                        </label>
+                        <label>
+                          Footfall conversion %
+                          <input id="footfallConversion" type="text" readonly>
+                        </label>
+                      </article>
+
+                      <article class="panel compact">
+                        <h3><span class="icon small"><i class="bi bi-graph-up-arrow"></i></span> Sales status</h3>
+                        <div class="choice-grid" id="salesStatusGroup">
+                          <label><input type="radio" name="salesStatus" value="Above Target" required> Above Target</label>
+                          <label><input type="radio" name="salesStatus" value="On Target"> On Target</label>
+                          <label><input type="radio" name="salesStatus" value="Below Target"> Below Target</label>
+                          <label><input type="radio" name="salesStatus" value="Very Poor"> Very Poor</label>
+                        </div>
+                      </article>
+
+                      <article class="panel compact">
+                        <h3><span class="icon small"><i class="bi bi-shop"></i></span> Store Status</h3>
+                        <div class="choice-grid" id="storeStatusGroup">
+                          <label><input type="radio" name="storeStatus" value="Open" required> Open</label>
+                          <label><input type="radio" name="storeStatus" value="Closed"> Closed</label>
+                        </div>
+                        <label id="storeClosedReasonField" class="hidden">
+                          Reason for closure
+                          <textarea id="storeClosedReason" name="storeClosedReason" rows="2" placeholder="Why was the store closed today?"></textarea>
+                        </label>
+                        <div class="panel-action-row hidden" id="storeStatusActionRow">
+                          <button type="button" class="form-submit-btn panel-save-btn" id="storeStatusSaveBtn">
+                            <i class="bi bi-check2-circle"></i>
+                            <span>Save</span>
+                          </button>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="status-card-right hidden" id="statusCardRight">
+                  <div class="right-card-columns">
+                    <div class="panel-column">
+                      <article class="panel compact hidden" id="reasonsIncreaseCard">
+                        <h3><span class="icon small"><i class="bi bi-graph-up-arrow"></i></span> Reasons for Increase</h3>
+                        <div class="check-list" data-list="reasonsForIncrease">
+                          <label><input type="checkbox" name="reasonsForIncrease" value="High Footfall"> High Footfall</label>
+                          <label><input type="checkbox" name="reasonsForIncrease" value="Festival Season"> Festival Season</label>
+                          <label><input type="checkbox" name="reasonsForIncrease" value="Good Offers"> Good Offers</label>
+                          <label><input type="checkbox" name="reasonsForIncrease" value="Repeat Customers"> Repeat Customers</label>
+                          <label><input type="checkbox" name="reasonsForIncrease" value="New Product Launch"> New Product Launch</label>
+                          <label><input type="checkbox" name="reasonsForIncrease" value="Strong Staff Performance"> Strong Staff Performance</label>
+                          <label><input type="checkbox" name="reasonsForIncrease" value="Social Media Campaign"> Social Media Campaign</label>
+                          <label><input type="checkbox" name="reasonsForIncrease" value="Mall Event"> Mall Event</label>
+                          <label><input type="checkbox" name="reasonsForIncrease" value="Good Inventory"> Good Inventory</label>
+                          <label><input type="checkbox" name="reasonsForIncrease" value="Better Visual Merchandising"> Better Visual Merchandising</label>
+                          <label><input type="checkbox" name="reasonsForIncrease" value="Other"> Other</label>
+                        </div>
+                      </article>
+
+                      <article class="panel compact hidden" id="reasonsDecreaseCard">
+                        <h3><span class="icon small"><i class="bi bi-graph-down-arrow"></i></span> Reasons for Decrease</h3>
+                        <div class="check-list" data-list="reasonsForDecrease">
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Low Walk-ins"> Low Walk-ins</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="OOS of Fast Moving Products"> OOS of Fast Moving Products</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Insufficient Staff"> Insufficient Staff</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Mall Low Footfall"> Mall Low Footfall</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Competitor Offers"> Competitor Offers</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="High Discount Expectation"> High Discount Expectation</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Product Pricing Concern"> Product Pricing Concern</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Tester Not Available"> Tester Not Available</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="VM Display Weak"> VM Display Weak</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="AC / Environment Issue"> AC / Environment Issue</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Customer Budget Concern"> Customer Budget Concern</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Poor Conversion"> Poor Conversion</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Product Not Available in Required Variant"> Product Not Available in Required Variant</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Billing Delay"> Billing Delay</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Internet / POS Issue"> Internet / POS Issue</label>
+                          <label><input type="checkbox" name="reasonsForDecrease" value="Other"> Other</label>
+                        </div>
+                      </article>
+                    </div>
+
+                    <div class="panel-column">
+                      <article class="panel compact">
+                        <h3><span class="icon small"><i class="bi bi-clipboard-check"></i></span> Action Taken by Store Team</h3>
+                        <div class="check-list" data-list="actionTakenByStoreTeam">
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="Customer Calling Done"> Customer Calling Done</label>
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="WhatsApp Outreach Done"> WhatsApp Outreach Done</label>
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="Clienteling Done"> Clienteling Done</label>
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="Sampling Activity Done"> Sampling Activity Done</label>
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="Cross Selling Focused"> Cross Selling Focused</label>
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="Add-on Selling Focused"> Add-on Selling Focused</label>
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="Local Marketing Done"> Local Marketing Done</label>
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="Repeat Customers Contacted"> Repeat Customers Contacted</label>
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="Team Briefing Conducted"> Team Briefing Conducted</label>
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="Escalation Shared to Concern Team"> Escalation Shared to Concern Team</label>
+                          <label><input type="checkbox" name="actionTakenByStoreTeam" value="Other"> Other</label>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <section class="section">
+              <div class="section-title">
+                <div>
+                  <h2>Department Review</h2>
+                  <p>Department issues, top products availability, and improvement support.</p>
+                </div>
+              </div>
+
+              <div class="department-layout">
+                <article class="panel">
+                  <h3><span class="icon small"><i class="bi bi-exclamation-triangle"></i></span> Departments Related Issue</h3>
+                  <p>Today, did the store face mall, project, VM, product, or merchandise issues?</p>
+                  <div class="accordion" id="departmentAccordion"></div>
+                </article>
+
+                <article class="panel">
+                  <h3><span class="icon small"><i class="bi bi-box-seam"></i></span> Top Products Availability Check</h3>
+                  <p>Tick products which were out of stock today.</p>
+                  <div class="check-list product-list" data-list="outOfStockProducts">
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 01"> Product 01</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 02"> Product 02</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 03"> Product 03</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 04"> Product 04</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 05"> Product 05</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 06"> Product 06</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 07"> Product 07</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 08"> Product 08</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 09"> Product 09</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 10"> Product 10</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 11"> Product 11</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 12"> Product 12</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 13"> Product 13</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 14"> Product 14</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 15"> Product 15</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 16"> Product 16</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 17"> Product 17</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 18"> Product 18</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 19"> Product 19</label>
+                    <label><input type="checkbox" name="outOfStockProducts" value="Product 20"> Product 20</label>
+                  </div>
+                </article>
+
+                <article class="panel">
+                  <h3><span class="icon small"><i class="bi bi-lightbulb"></i></span> Sales Improvement Suggestions</h3>
+                  <p>What support is required to improve sales?</p>
+                  <div class="check-list limited-list" data-list="salesImprovementSuggestions">
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="More Offers Required"> More Offers Required</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Additional Staff Required"> Additional Staff Required</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Better Product Availability"> Better Product Availability</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Better VM Support"> Better VM Support</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Mall Marketing Support"> Mall Marketing Support</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Local Activity Required"> Local Activity Required</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Influencer Activity Required"> Influencer Activity Required</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Product Training Required"> Product Training Required</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Tester Support Required"> Tester Support Required</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Faster Replenishment Required"> Faster Replenishment Required</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Better Customer Engagement Activity"> Better Customer Engagement Activity</label>
+                    <label><input type="checkbox" name="salesImprovementSuggestions" value="Other"> Other</label>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section class="section">
+              <div class="section-title">
+                <div>
+                  <h2>Remark</h2>
+                  <p>Any additional notes or comments for today.</p>
+                </div>
+              </div>
+
+              <article class="panel">
+                <label>
+                  <textarea id="remark" name="remark" rows="4" placeholder="Enter any additional remarks..."></textarea>
+                </label>
+                <p class="field-hint" id="remarkWordCount">0 / 50 words</p>
+              </article>
+            </section>
+
+            <div class="dsr-submit-row">
+              <button type="button" class="form-submit-btn" id="dsrSubmitBtn">
+                <i class="bi bi-check2-circle"></i>
+                <span>Submit DSR</span>
+              </button>
+              <p id="dsrSubmitMessage" class="form-message"></p>
+            </div>
           </section>
 
           <section id="dsr-report" class="page">
@@ -79,6 +368,20 @@
                 <i class="bi bi-hourglass-split"></i>
                 <p class="placeholder-page-card-title">Nothing here yet</p>
                 <p class="placeholder-page-card-text">The DSR-Report content will be added soon.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="store-information" class="page">
+            <div class="placeholder-page">
+              <div class="placeholder-page-header">
+                <span class="placeholder-page-icon"><i class="bi bi-building"></i></span>
+                <h2 class="placeholder-page-title">Store Information</h2>
+              </div>
+              <div class="placeholder-page-card">
+                <i class="bi bi-hourglass-split"></i>
+                <p class="placeholder-page-card-title">Nothing here yet</p>
+                <p class="placeholder-page-card-text">The Store Information content will be added soon.</p>
               </div>
             </div>
           </section>
