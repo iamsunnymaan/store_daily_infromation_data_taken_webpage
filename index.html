@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Form</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+      <aside class="app-sidebar" id="appSidebar">
+        <div class="sidebar-brand">
+          <span class="sidebar-brand-mark">
+            <i class="bi bi-shop"></i>
+            <span class="sidebar-brand-text">Store Form</span>
+          </span>
+          <button type="button" class="sidebar-collapse-btn" id="sidebarCollapseToggle" aria-label="Collapse sidebar" title="Collapse sidebar">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav">
+          <p class="sidebar-section-title">Store Form</p>
+          <a href="#" class="nav-link active" data-page="dsr-form">
+            <i class="bi bi-clipboard-data"></i>
+            <span class="nav-link-text">DSR-Form</span>
+          </a>
+          <a href="#" class="nav-link" data-page="dsr-report">
+            <i class="bi bi-bar-chart-line"></i>
+            <span class="nav-link-text">DSR-Report</span>
+          </a>
+        </nav>
+      </aside>
+
+      <div class="main-area">
+        <button type="button" class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle menu">
+          <i class="bi bi-list"></i>
+        </button>
+
+        <main class="app-main">
+          <section id="dsr-form" class="page active">
+            <div class="placeholder-page">
+              <div class="placeholder-page-header">
+                <span class="placeholder-page-icon"><i class="bi bi-clipboard-data"></i></span>
+                <h2 class="placeholder-page-title">DSR-Form</h2>
+              </div>
+              <div class="placeholder-page-card">
+                <i class="bi bi-hourglass-split"></i>
+                <p class="placeholder-page-card-title">Nothing here yet</p>
+                <p class="placeholder-page-card-text">The DSR-Form content will be added soon.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="dsr-report" class="page">
+            <div class="placeholder-page">
+              <div class="placeholder-page-header">
+                <span class="placeholder-page-icon"><i class="bi bi-bar-chart-line"></i></span>
+                <h2 class="placeholder-page-title">DSR-Report</h2>
+              </div>
+              <div class="placeholder-page-card">
+                <i class="bi bi-hourglass-split"></i>
+                <p class="placeholder-page-card-title">Nothing here yet</p>
+                <p class="placeholder-page-card-text">The DSR-Report content will be added soon.</p>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
