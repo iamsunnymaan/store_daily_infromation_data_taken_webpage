@@ -105,6 +105,12 @@ if (storeAccessForm) {
       document.getElementById("storeAddress").textContent = site.address || "—";
 
       document.getElementById("dsrWorkspace")?.classList.remove("hidden");
+
+      try {
+        localStorage.setItem("verifiedSite", JSON.stringify(site));
+      } catch (storageError) {
+        console.warn("Unable to persist verified site:", storageError);
+      }
     } catch (error) {
       console.error("Store access check failed:", error);
       setStoreAccessMessage("Unable to verify access right now. Please try again.", true);
@@ -481,6 +487,37 @@ if (dsrSubmitBtn) {
   });
 }
 
+function getVerifiedSite() {
+  try {
+    const raw = localStorage.getItem("verifiedSite");
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.warn("Unable to read verified site:", error);
+    return null;
+  }
+}
+
+const dsrReportUnverifiedMessage = document.getElementById("dsrReportUnverifiedMessage");
+const dsrReportStoreInfoCard = document.getElementById("dsrReportStoreInfoCard");
+const dsrReportContent = document.getElementById("dsrReportContent");
+
+function renderReportVerificationState(site) {
+  const verified = !!site;
+
+  dsrReportUnverifiedMessage?.classList.toggle("hidden", verified);
+  dsrReportStoreInfoCard?.classList.toggle("hidden", !verified);
+  dsrReportContent?.classList.toggle("hidden", !verified);
+
+  if (verified) {
+    document.getElementById("reportStoreName").textContent = site.storeName || "—";
+    document.getElementById("reportStoreCodeDisplay").textContent = site.siteCode || "—";
+    document.getElementById("reportStoreManager").textContent = site.sm || "—";
+    document.getElementById("reportStoreAddress").textContent = site.address || "—";
+  }
+
+  return verified;
+}
+
 const dsrReportTableBody = document.getElementById("dsrReportTableBody");
 const dsrReportEmptyMessage = document.getElementById("dsrReportEmptyMessage");
 
@@ -664,12 +701,19 @@ function buildDayTooltip(status, salesEntries) {
 async function loadCalendar() {
   if (!calendarGrid) return;
 
+  const verifiedSite = getVerifiedSite();
+  if (!verifiedSite) {
+    calendarGrid.innerHTML = "";
+    return;
+  }
+
   calendarMonthLabel.textContent = `${MONTH_NAMES[calendarMonth]} ${calendarYear}`;
 
   let rows = [];
   try {
     const response = await fetch(`${API_BASE_URL}/api/dsr-form`);
     if (response.ok) rows = await response.json();
+    rows = rows.filter((row) => row.storeCode === verifiedSite.siteCode);
   } catch (error) {
     console.error("Failed to load calendar data:", error);
   }
@@ -771,6 +815,120 @@ if (calendarNextBtn) {
       calendarYear += 1;
     }
     loadCalendar();
+  });
+}
+
+const fyYearFilterBtn = document.getElementById("fyYearFilterBtn");
+const fyYearFilterMenu = document.getElementById("fyYearFilterMenu");
+const fyYearFilterLabel = document.getElementById("fyYearFilterLabel");
+const fyTableBody = document.getElementById("fyTableBody");
+
+const FY_MONTH_ORDER = [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3];
+const FY_MONTH_NAMES = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+
+function getCurrentFyStartYear() {
+  const now = new Date();
+  return now.getMonth() + 1 >= 4 ? now.getFullYear() : now.getFullYear() - 1;
+}
+
+function fyLabel(startYear) {
+  return `FY ${startYear}-${String(startYear + 1).slice(-2)}`;
+}
+
+let fySelectedStartYear = getCurrentFyStartYear();
+
+async function loadFyCard() {
+  if (!fyTableBody) return;
+
+  const verifiedSite = getVerifiedSite();
+  if (fyYearFilterLabel) fyYearFilterLabel.textContent = fyLabel(fySelectedStartYear);
+
+  if (!verifiedSite) {
+    fyTableBody.innerHTML = "";
+    return;
+  }
+
+  let rows = [];
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/dsr-form`);
+    if (response.ok) rows = await response.json();
+    rows = rows.filter((row) => row.storeCode === verifiedSite.siteCode);
+  } catch (error) {
+    console.error("Failed to load FY submission history:", error);
+  }
+
+  const statusByDate = new Map();
+  rows.forEach((row) => {
+    if (!row.visitDate) return;
+    const isClosed = (row.storeStatus || "").toLowerCase() === "closed";
+    if (isClosed) {
+      statusByDate.set(row.visitDate, "closed");
+    } else if (statusByDate.get(row.visitDate) !== "closed") {
+      statusByDate.set(row.visitDate, "submitted");
+    }
+  });
+
+  const today = new Date();
+  const todayIso = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`;
+
+  fyTableBody.innerHTML = "";
+
+  FY_MONTH_ORDER.forEach((month, index) => {
+    const year = month >= 4 ? fySelectedStartYear : fySelectedStartYear + 1;
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    let submitted = 0;
+    let missed = 0;
+    let closed = 0;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const iso = `${year}-${pad2(month)}-${pad2(day)}`;
+      if (iso > todayIso) continue;
+      const status = statusByDate.get(iso) || "missed";
+      if (status === "submitted") submitted++;
+      else if (status === "closed") closed++;
+      else missed++;
+    }
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${FY_MONTH_NAMES[index]} ${String(year).slice(-2)}</td>
+      <td>${submitted}</td>
+      <td>${missed}</td>
+      <td>${closed}</td>
+    `;
+    fyTableBody.appendChild(tr);
+  });
+}
+
+function renderFyYearMenu() {
+  if (!fyYearFilterMenu) return;
+  const currentFy = getCurrentFyStartYear();
+  const years = [currentFy, currentFy - 1, currentFy - 2];
+
+  fyYearFilterMenu.innerHTML = "";
+  years.forEach((y) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = fyLabel(y);
+    btn.addEventListener("click", () => {
+      fySelectedStartYear = y;
+      fyYearFilterMenu.classList.add("hidden");
+      loadFyCard();
+    });
+    fyYearFilterMenu.appendChild(btn);
+  });
+}
+
+if (fyYearFilterBtn) {
+  renderFyYearMenu();
+  fyYearFilterBtn.addEventListener("click", () => {
+    fyYearFilterMenu?.classList.toggle("hidden");
+  });
+  document.addEventListener("click", (event) => {
+    if (!fyYearFilterBtn.contains(event.target) && !fyYearFilterMenu?.contains(event.target)) {
+      fyYearFilterMenu?.classList.add("hidden");
+    }
   });
 }
 
@@ -906,7 +1064,21 @@ function renderTopReasonBarChart(canvasId, entries, color) {
   });
 }
 
+let salesTrendRows = [];
+let salesTrendChartType = "line";
+
+function updateSalesTrendModeBadge() {
+  const badge = document.getElementById("salesTrendModeBadge");
+  if (!badge) return;
+  if (reportFilterOpen && reportRangeType === "month") badge.textContent = "Monthly";
+  else if (reportFilterOpen && reportRangeType === "year") badge.textContent = "Yearly";
+  else badge.textContent = "Daily";
+}
+
 function renderSalesTrendChart(rows) {
+  salesTrendRows = rows;
+  updateSalesTrendModeBadge();
+
   const gridColor = getChartColor("--chart-grid");
   const textColor = getChartColor("--color-text-secondary");
   const seriesColor = getChartColor("--chart-series-1");
@@ -924,18 +1096,20 @@ function renderSalesTrendChart(rows) {
     totalsByDate.set(key, (totalsByDate.get(key) || 0) + (Number(row.todaySale) || 0));
   });
   const dates = [...totalsByDate.keys()].sort();
+  const isBar = salesTrendChartType === "bar";
 
   renderChart("salesTrendChart", {
-    type: "line",
+    type: salesTrendChartType,
     data: {
       labels: dates,
       datasets: [{
         data: dates.map((date) => totalsByDate.get(date)),
         borderColor: seriesColor,
         backgroundColor: seriesColor,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        borderWidth: 2,
+        pointRadius: isBar ? 0 : 4,
+        pointHoverRadius: isBar ? 0 : 6,
+        borderWidth: isBar ? 0 : 2,
+        borderRadius: isBar ? 4 : 0,
         tension: 0.25,
         fill: false
       }]
@@ -951,6 +1125,15 @@ function renderSalesTrendChart(rows) {
     }
   });
 }
+
+document.getElementById("salesTrendChartTypeToggle")?.querySelectorAll(".daily-trend-chart-type-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.chartType === salesTrendChartType) return;
+    salesTrendChartType = btn.dataset.chartType;
+    btn.parentElement.querySelectorAll(".daily-trend-chart-type-btn").forEach((b) => b.classList.toggle("active", b === btn));
+    renderSalesTrendChart(salesTrendRows);
+  });
+});
 
 function renderReportAnalytics(rows) {
   if (typeof Chart === "undefined") return;
@@ -970,10 +1153,19 @@ function renderReportAnalytics(rows) {
 async function loadDsrReport() {
   if (!dsrReportTableBody) return;
 
+  const verifiedSite = getVerifiedSite();
+  if (!renderReportVerificationState(verifiedSite)) {
+    renderDsrReportRows([]);
+    renderDsrKpis([]);
+    return;
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/dsr-form`);
     if (!response.ok) throw new Error(`Failed to load report (${response.status})`);
     let rows = await response.json();
+
+    rows = rows.filter((row) => row.storeCode === verifiedSite.siteCode);
 
     if (reportDateRange.from) {
       rows = rows.filter((row) => row.visitDate && row.visitDate >= reportDateRange.from);
@@ -996,6 +1188,7 @@ async function loadDsrReport() {
 document.querySelectorAll('[data-page="dsr-report"]').forEach((link) => {
   link.addEventListener("click", loadDsrReport);
   link.addEventListener("click", loadCalendar);
+  link.addEventListener("click", loadFyCard);
 });
 
 sidebarCollapseToggle.addEventListener("click", () => {

@@ -599,6 +599,91 @@ body {
   height: 260px;
 }
 
+/* Sales Trend card (daily-trend-card) */
+
+.daily-trend-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-card-bg));
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+.daily-trend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.daily-trend-header-text {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.daily-trend-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.daily-trend-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.daily-trend-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.daily-trend-chart-type-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.daily-trend-chart-type-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.daily-trend-chart-type-btn:hover:not(.active) {
+  color: var(--color-text-primary);
+}
+
+.daily-trend-chart-type-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
 /* Filter Header: pill toggle */
 
 .section-title {
@@ -904,6 +989,106 @@ body {
   margin-left: auto;
   padding: 12px;
   gap: 0;
+}
+
+/* FY submission history card */
+
+.dashboard-fy-overview-card {
+  margin-bottom: 16px;
+}
+
+.dashboard-fy-overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.dashboard-fy-overview-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.dashboard-fy-year-filter {
+  position: relative;
+}
+
+.dashboard-fy-year-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card-bg);
+  color: var(--color-text-primary);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dashboard-fy-year-filter-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.dashboard-fy-year-filter-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 10;
+  min-width: 110px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+  padding: 4px;
+}
+
+.dashboard-fy-year-filter-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.dashboard-fy-year-filter-menu button:hover {
+  background: var(--color-background);
+}
+
+.dashboard-fy-overview-table-wrap {
+  overflow-x: auto;
+}
+
+.dashboard-fy-overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.dashboard-fy-overview-table th,
+.dashboard-fy-overview-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dashboard-fy-overview-table th {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  background: var(--color-background);
+}
+
+.dashboard-fy-overview-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .calendar-weekdays {
