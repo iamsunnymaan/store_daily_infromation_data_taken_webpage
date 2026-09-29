@@ -299,13 +299,13 @@ body {
 .page.active {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 #dsrWorkspace {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 /* Placeholder page */
@@ -499,13 +499,13 @@ body {
 .report-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8rem;
+  font-size: 0.68rem;
   white-space: nowrap;
 }
 
 .report-table th,
 .report-table td {
-  padding: 10px 14px;
+  padding: 6px 9px;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
 }
@@ -553,14 +553,25 @@ body {
 
 .analytics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
 }
 
 .chart-panel {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
+  padding: 10px 12px;
+}
+
+.chart-panel h3 {
+  font-size: 0.72rem;
+}
+
+.chart-panel .icon.small {
+  width: 16px;
+  height: 16px;
+  font-size: 0.62rem;
 }
 
 .chart-canvas-wrap {
@@ -568,17 +579,25 @@ body {
   height: 260px;
 }
 
+.chart-panel .chart-canvas-wrap {
+  height: 190px;
+}
+
 /* Sales Trend card (daily-trend-card) */
 
 .daily-trend-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 18px;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
   background: color-mix(in srgb, var(--color-primary) 6%, var(--color-card-bg));
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-card);
+}
+
+.daily-trend-card .chart-canvas-wrap {
+  height: 190px;
 }
 
 .daily-trend-header {
@@ -586,18 +605,18 @@ body {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .daily-trend-header-text {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .daily-trend-title {
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -605,9 +624,9 @@ body {
 .daily-trend-mode-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  padding: 1px 6px;
   border-radius: 999px;
-  font-size: 0.65rem;
+  font-size: 0.58rem;
   font-weight: 600;
   color: var(--color-primary);
   background: var(--color-background);
@@ -618,7 +637,7 @@ body {
 .daily-trend-header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -629,15 +648,15 @@ body {
   background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  padding: 3px;
+  padding: 2px;
 }
 
 .daily-trend-chart-type-btn {
   border: none;
   background: transparent;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 0.65rem;
+  font-size: 0.58rem;
   font-weight: 600;
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -650,6 +669,37 @@ body {
 
 .daily-trend-chart-type-btn.active {
   background: var(--color-primary);
+  color: #fff;
+}
+
+/* Department Issues: category toggle */
+
+.issue-category-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.issue-category-btn {
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.issue-category-btn:hover:not(.active) {
+  color: var(--color-text-primary);
+  border-color: var(--color-primary);
+}
+
+.issue-category-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: #fff;
 }
 
@@ -741,39 +791,6 @@ body {
   color: #1b7a4a;
 }
 
-/* View toggle pill */
-
-.view-toggle {
-  display: flex;
-  width: fit-content;
-  margin: 0 auto 12px;
-  padding: 2px;
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  box-shadow: var(--shadow-card);
-}
-
-.view-toggle-option {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 14px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  font-family: inherit;
-  color: var(--color-text-secondary);
-  background: transparent;
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.view-toggle-option.active {
-  color: #fff;
-  background: var(--color-primary);
-}
-
 /* Status section - KPI entry */
 
 .status-columns {
@@ -815,6 +832,7 @@ body {
 #dsrFilterHeaderCard {
   min-height: 0;
   padding: 8px 12px;
+  margin-bottom: 24px;
 }
 
 .filter-row {
@@ -1403,6 +1421,14 @@ body {
 }
 
 /* Department Review section */
+
+#dsrReportContent > .section {
+  margin-bottom: 24px;
+}
+
+#dsrReportContent > .section:last-child {
+  margin-bottom: 0;
+}
 
 .section-title {
   display: flex;

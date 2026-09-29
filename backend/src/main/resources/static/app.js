@@ -1,4 +1,4 @@
-const navLinks = document.querySelectorAll(".nav-link, .view-toggle-option");
+const navLinks = document.querySelectorAll(".nav-link");
 const pages = document.querySelectorAll(".page");
 const sidebar = document.getElementById("appSidebar");
 const sidebarToggle = document.getElementById("sidebarToggle");
@@ -812,9 +812,12 @@ if (calendarNextBtn) {
 const FY_MONTH_ORDER = [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3];
 const FY_MONTH_NAMES = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
 
+function getFyStartYearForDate(date) {
+  return date.getMonth() + 1 >= 4 ? date.getFullYear() : date.getFullYear() - 1;
+}
+
 function getCurrentFyStartYear() {
-  const now = new Date();
-  return now.getMonth() + 1 >= 4 ? now.getFullYear() : now.getFullYear() - 1;
+  return getFyStartYearForDate(new Date());
 }
 
 function fyLabel(startYear) {
@@ -1132,7 +1135,7 @@ function renderTopReasonBarChart(canvasId, entries, color) {
     type: "bar",
     data: {
       labels: top.map(([label]) => label),
-      datasets: [{ data: top.map(([, count]) => count), backgroundColor: color, borderRadius: 4, barThickness: 16 }]
+      datasets: [{ data: top.map(([, count]) => count), backgroundColor: color, borderRadius: 4, maxBarThickness: 14 }]
     },
     options: baseBarOptions(gridColor, textColor)
   });
@@ -1141,12 +1144,17 @@ function renderTopReasonBarChart(canvasId, entries, color) {
 let salesTrendRows = [];
 let salesTrendChartType = "line";
 
+function getSalesTrendFyStartYear() {
+  if (reportFilterOpen && reportDateRange.from) {
+    return getFyStartYearForDate(new Date(reportDateRange.from));
+  }
+  return getCurrentFyStartYear();
+}
+
 function updateSalesTrendModeBadge() {
   const badge = document.getElementById("salesTrendModeBadge");
   if (!badge) return;
-  if (reportFilterOpen && reportRangeType === "month") badge.textContent = "Monthly";
-  else if (reportFilterOpen && reportRangeType === "year") badge.textContent = "Yearly";
-  else badge.textContent = "Daily";
+  badge.textContent = fyLabel(getSalesTrendFyStartYear());
 }
 
 function renderSalesTrendChart(rows) {
@@ -1156,28 +1164,30 @@ function renderSalesTrendChart(rows) {
   const gridColor = getChartColor("--chart-grid");
   const textColor = getChartColor("--color-text-secondary");
   const seriesColor = getChartColor("--chart-series-1");
+  const isBar = salesTrendChartType === "bar";
 
-  const trendGroupKey = (visitDate) => {
-    if (reportFilterOpen && reportRangeType === "month") return visitDate.slice(0, 7);
-    if (reportFilterOpen && reportRangeType === "year") return visitDate.slice(0, 4);
-    return visitDate;
-  };
-
-  const totalsByDate = new Map();
+  const startYear = getSalesTrendFyStartYear();
+  const totalsByMonth = new Map();
   rows.forEach((row) => {
     if (!row.visitDate) return;
-    const key = trendGroupKey(row.visitDate);
-    totalsByDate.set(key, (totalsByDate.get(key) || 0) + (Number(row.todaySale) || 0));
+    const key = row.visitDate.slice(0, 7);
+    totalsByMonth.set(key, (totalsByMonth.get(key) || 0) + (Number(row.todaySale) || 0));
   });
-  const dates = [...totalsByDate.keys()].sort();
-  const isBar = salesTrendChartType === "bar";
+
+  const labels = [];
+  const values = [];
+  FY_MONTH_ORDER.forEach((month, index) => {
+    const year = month >= 4 ? startYear : startYear + 1;
+    labels.push(`${FY_MONTH_NAMES[index]} ${String(year).slice(-2)}`);
+    values.push(totalsByMonth.get(`${year}-${pad2(month)}`) || 0);
+  });
 
   renderChart("salesTrendChart", {
     type: salesTrendChartType,
     data: {
-      labels: dates,
+      labels,
       datasets: [{
-        data: dates.map((date) => totalsByDate.get(date)),
+        data: values,
         borderColor: seriesColor,
         backgroundColor: seriesColor,
         pointRadius: isBar ? 0 : 4,
@@ -1209,6 +1219,26 @@ document.getElementById("salesTrendChartTypeToggle")?.querySelectorAll(".daily-t
   });
 });
 
+let issuesRows = [];
+let issueCategoryKey = "driMmr";
+
+function renderIssuesChart() {
+  renderTopReasonBarChart(
+    "issuesChart",
+    countOccurrences(issuesRows, [issueCategoryKey], ["No Issue"]),
+    getChartColor("--chart-status-serious")
+  );
+}
+
+document.getElementById("issueCategoryToggle")?.querySelectorAll(".issue-category-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.category === issueCategoryKey) return;
+    issueCategoryKey = btn.dataset.category;
+    btn.parentElement.querySelectorAll(".issue-category-btn").forEach((b) => b.classList.toggle("active", b === btn));
+    renderIssuesChart();
+  });
+});
+
 function renderReportAnalytics(rows) {
   if (typeof Chart === "undefined") return;
 
@@ -1216,12 +1246,10 @@ function renderReportAnalytics(rows) {
   renderTopReasonBarChart("reasonsIncreaseChart", countOccurrences(rows, ["rcIc"]), getChartColor("--chart-status-good"));
   renderTopReasonBarChart("reasonsDecreaseChart", countOccurrences(rows, ["rcDc"]), getChartColor("--chart-status-critical"));
   renderTopReasonBarChart("actionTakenChart", countOccurrences(rows, ["atbs"]), getChartColor("--chart-series-1"));
-  renderTopReasonBarChart(
-    "issuesChart",
-    countOccurrences(rows, ["driMmr", "driPr", "driVm", "driProductR", "driMr", "driOther"], ["No Issue"]),
-    getChartColor("--chart-status-serious")
-  );
+  issuesRows = rows;
+  renderIssuesChart();
   renderTopReasonBarChart("oosChart", countOccurrences(rows, ["tpvc"]), getChartColor("--chart-status-warning"));
+  renderTopReasonBarChart("salesImprovementChart", countOccurrences(rows, ["sis"]), getChartColor("--chart-status-good"));
 }
 
 async function loadDsrReport() {

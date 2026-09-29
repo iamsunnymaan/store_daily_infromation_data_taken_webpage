@@ -33,10 +33,6 @@
             <i class="bi bi-bar-chart-line"></i>
             <span class="nav-link-text">My-Report</span>
           </a>
-          <a href="#" class="nav-link" data-page="raised-query">
-            <i class="bi bi-question-circle"></i>
-            <span class="nav-link-text">Raised Query</span>
-          </a>
         </nav>
       </aside>
 
@@ -46,11 +42,6 @@
         </button>
 
         <main class="app-main">
-          <div class="view-toggle">
-            <button type="button" class="view-toggle-option active" data-page="dsr-form">Form</button>
-            <button type="button" class="view-toggle-option" data-page="dsr-report">My-Report</button>
-          </div>
-
           <section id="dsr-form" class="page active">
             <div class="placeholder-page">
               <div class="placeholder-page-header">
@@ -533,11 +524,23 @@
                 <div class="analytics-grid">
                   <article class="panel chart-panel">
                     <h3><span class="icon small"><i class="bi bi-exclamation-triangle"></i></span> Department Issues</h3>
+                    <div class="issue-category-toggle" id="issueCategoryToggle">
+                      <button type="button" class="issue-category-btn active" data-category="driMmr">Mall / Market Related</button>
+                      <button type="button" class="issue-category-btn" data-category="driPr">Project Related</button>
+                      <button type="button" class="issue-category-btn" data-category="driVm">VM Related</button>
+                      <button type="button" class="issue-category-btn" data-category="driProductR">Product Related</button>
+                      <button type="button" class="issue-category-btn" data-category="driMr">Merchandise Related</button>
+                      <button type="button" class="issue-category-btn" data-category="driOther">Other</button>
+                    </div>
                     <div class="chart-canvas-wrap"><canvas id="issuesChart"></canvas></div>
                   </article>
                   <article class="panel chart-panel">
                     <h3><span class="icon small"><i class="bi bi-box-seam"></i></span> Top Out-of-Stock Products</h3>
                     <div class="chart-canvas-wrap"><canvas id="oosChart"></canvas></div>
+                  </article>
+                  <article class="panel chart-panel">
+                    <h3><span class="icon small"><i class="bi bi-lightbulb"></i></span> Sales Improvement Suggestions</h3>
+                    <div class="chart-canvas-wrap"><canvas id="salesImprovementChart"></canvas></div>
                   </article>
                 </div>
               </section>
@@ -573,15 +576,6 @@
                   <p id="dsrReportEmptyMessage" class="form-message hidden">No DSR records found.</p>
                 </div>
               </section>
-              </div>
-            </div>
-          </section>
-
-          <section id="raised-query" class="page">
-            <div class="placeholder-page">
-              <div class="placeholder-page-header">
-                <span class="placeholder-page-icon"><i class="bi bi-question-circle"></i></span>
-                <h2 class="placeholder-page-title">Raised Query</h2>
               </div>
             </div>
           </section>
