@@ -366,25 +366,6 @@
                 Please verify your store access on the Form page before viewing this report.
               </p>
 
-              <article class="panel hidden" id="dsrReportStoreInfoCard">
-                <div class="info-row">
-                  <span class="info-key">Store Name</span>
-                  <span class="info-value" id="reportStoreName">—</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-key">Store Code</span>
-                  <span class="info-value" id="reportStoreCodeDisplay">—</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-key">Store Manager</span>
-                  <span class="info-value" id="reportStoreManager">—</span>
-                </div>
-                <div class="info-row">
-                  <span class="info-key">Store Address</span>
-                  <span class="info-value" id="reportStoreAddress">—</span>
-                </div>
-              </article>
-
               <div id="dsrReportContent">
               <section class="section" id="dsrFilterHeaderSection">
                 <div class="section-title">
@@ -416,109 +397,83 @@
               <section class="section">
                 <div class="section-title">
                   <div>
-                    <h2>Sales KPIs</h2>
-                    <p>Aggregated across the currently filtered submissions.</p>
-                  </div>
-                </div>
-                <div class="kpi-stat-row" id="dsrKpiRow">
-                  <div class="kpi-stat-tile">
-                    <span class="kpi-stat-label">Total Sales</span>
-                    <span class="kpi-stat-value" id="kpiTotalSales">—</span>
-                  </div>
-                  <div class="kpi-stat-tile">
-                    <span class="kpi-stat-label">Total Transactions</span>
-                    <span class="kpi-stat-value" id="kpiTotalTransactions">—</span>
-                  </div>
-                  <div class="kpi-stat-tile">
-                    <span class="kpi-stat-label">Total Footfall</span>
-                    <span class="kpi-stat-value" id="kpiTotalFootfall">—</span>
-                  </div>
-                  <div class="kpi-stat-tile">
-                    <span class="kpi-stat-label">Avg ATV</span>
-                    <span class="kpi-stat-value" id="kpiAvgAtv">—</span>
-                  </div>
-                  <div class="kpi-stat-tile">
-                    <span class="kpi-stat-label">Avg UPT</span>
-                    <span class="kpi-stat-value" id="kpiAvgUpt">—</span>
-                  </div>
-                  <div class="kpi-stat-tile">
-                    <span class="kpi-stat-label">Avg Footfall Conversion</span>
-                    <span class="kpi-stat-value" id="kpiAvgConversion">—</span>
-                  </div>
-                  <div class="kpi-stat-tile">
-                    <span class="kpi-stat-label">Submissions</span>
-                    <span class="kpi-stat-value" id="kpiSubmissions">—</span>
-                  </div>
-                </div>
-              </section>
-
-              <section class="section">
-                <div class="section-title">
-                  <div>
-                    <h2>Submission Calendar</h2>
-                  </div>
-                  <div class="calendar-nav">
-                    <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Previous month">
-                      <i class="bi bi-chevron-left"></i>
-                    </button>
-                    <span class="calendar-month-label" id="calendarMonthLabel">—</span>
-                    <button type="button" class="calendar-nav-btn" id="calendarNextBtn" aria-label="Next month">
-                      <i class="bi bi-chevron-right"></i>
-                    </button>
+                    <h2>Sales FY</h2>
                   </div>
                 </div>
 
-                <article class="panel dashboard-fy-overview-card" id="submissionFyCard">
-                  <div class="dashboard-fy-overview-header">
-                    <span class="dashboard-fy-overview-value">FY - Submission History</span>
-                    <div class="dashboard-fy-year-filter">
-                      <button type="button" class="dashboard-fy-year-filter-btn" id="fyYearFilterBtn" aria-expanded="false">
-                        <i class="bi bi-funnel"></i>
-                        <span id="fyYearFilterLabel">—</span>
-                        <i class="bi bi-chevron-down"></i>
+                <div class="sales-fy-row">
+                  <article class="panel dashboard-fy-overview-card" id="salesFyCard">
+                    <div class="dashboard-fy-overview-header">
+                      <span class="dashboard-fy-overview-value">Sales FY</span>
+                      <div class="dashboard-fy-year-filter">
+                        <button type="button" class="dashboard-fy-year-filter-btn" id="salesFyYearFilterBtn" aria-expanded="false">
+                          <i class="bi bi-funnel"></i>
+                          <span id="salesFyYearFilterLabel">—</span>
+                          <i class="bi bi-chevron-down"></i>
+                        </button>
+                        <div class="dashboard-fy-year-filter-menu hidden" id="salesFyYearFilterMenu"></div>
+                      </div>
+                    </div>
+                    <div class="dashboard-fy-overview-table-wrap">
+                      <table class="dashboard-fy-overview-table">
+                        <thead>
+                          <tr>
+                            <th>Month</th>
+                            <th>Target</th>
+                            <th>Sales</th>
+                            <th>Achieved</th>
+                            <th>LY</th>
+                            <th>Total Transactions</th>
+                            <th>Footfall</th>
+                            <th>Total Units Sold</th>
+                            <th>ATV</th>
+                            <th>UPT</th>
+                            <th>Footfall Conversion %</th>
+                            <th>Sales Status</th>
+                          </tr>
+                        </thead>
+                        <tbody id="salesFyTableBody"></tbody>
+                      </table>
+                    </div>
+                  </article>
+
+                  <div class="calendar-column">
+                    <div class="calendar-nav">
+                      <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Previous month">
+                        <i class="bi bi-chevron-left"></i>
                       </button>
-                      <div class="dashboard-fy-year-filter-menu hidden" id="fyYearFilterMenu"></div>
+                      <span class="calendar-month-label" id="calendarMonthLabel">—</span>
+                      <button type="button" class="calendar-nav-btn" id="calendarNextBtn" aria-label="Next month">
+                        <i class="bi bi-chevron-right"></i>
+                      </button>
                     </div>
-                  </div>
-                  <div class="dashboard-fy-overview-table-wrap">
-                    <table class="dashboard-fy-overview-table">
-                      <thead>
-                        <tr>
-                          <th>Month</th>
-                          <th>Submitted</th>
-                          <th>Not Submitted</th>
-                          <th>Store Closed</th>
-                        </tr>
-                      </thead>
-                      <tbody id="fyTableBody"></tbody>
-                    </table>
-                  </div>
-                </article>
 
-                <article class="panel calendar-panel">
-                  <div class="calendar-weekdays">
-                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-                  </div>
-                  <div class="calendar-grid" id="calendarGrid"></div>
+                    <article class="panel calendar-panel">
+                      <div class="calendar-weekdays">
+                        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                      </div>
+                      <div class="calendar-grid" id="calendarGrid"></div>
 
-                  <div class="calendar-legend">
-                    <div class="calendar-legend-item">
-                      <span class="calendar-dot calendar-dot-submitted"></span>
-                      <span>Submitted</span>
-                      <strong id="calendarCountSubmitted">0</strong>
-                    </div>
-                    <div class="calendar-legend-item">
-                      <span class="calendar-dot calendar-dot-missed"></span>
-                      <span>Not Submitted</span>
-                      <strong id="calendarCountMissed">0</strong>
-                    </div>
-                    <div class="calendar-legend-item">
-                      <span class="calendar-dot calendar-dot-closed"></span>
-                      <span>Store Closed</span>
-                      <strong id="calendarCountClosed">0</strong>
-                    </div>
+                      <div class="calendar-legend">
+                        <div class="calendar-legend-item">
+                          <span class="calendar-dot calendar-dot-submitted"></span>
+                          <span>Submitted</span>
+                          <strong id="calendarCountSubmitted">0</strong>
+                        </div>
+                        <div class="calendar-legend-item">
+                          <span class="calendar-dot calendar-dot-missed"></span>
+                          <span>Not Submitted</span>
+                          <strong id="calendarCountMissed">0</strong>
+                        </div>
+                        <div class="calendar-legend-item">
+                          <span class="calendar-dot calendar-dot-closed"></span>
+                          <span>Store Closed</span>
+                          <strong id="calendarCountClosed">0</strong>
+                        </div>
+                      </div>
+                    </article>
                   </div>
-                </article>
+                </div>
               </section>
 
               <section class="section">

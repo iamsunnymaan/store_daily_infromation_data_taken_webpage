@@ -551,37 +551,6 @@ body {
   }
 }
 
-.kpi-stat-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.kpi-stat-tile {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 150px;
-  flex: 1 1 150px;
-  padding: 14px 16px;
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  box-shadow: var(--shadow-card);
-}
-
-.kpi-stat-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-}
-
-.kpi-stat-value {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-}
-
 .analytics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -985,15 +954,37 @@ body {
 }
 
 .calendar-panel {
-  max-width: 320px;
-  margin-left: auto;
+  width: 100%;
   padding: 12px;
   gap: 0;
 }
 
-/* FY submission history card */
+.calendar-column {
+  width: calc(20% - 8px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calendar-column .calendar-nav {
+  justify-content: center;
+}
+
+.calendar-column .calendar-month-label {
+  min-width: 0;
+  font-size: 0.72rem;
+}
+
+/* Sales FY card */
+
+.sales-fy-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
 
 .dashboard-fy-overview-card {
+  width: calc(80% - 8px);
   margin-bottom: 16px;
 }
 
@@ -1003,11 +994,11 @@ body {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .dashboard-fy-overview-value {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -1019,13 +1010,13 @@ body {
 .dashboard-fy-year-filter-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
+  gap: 5px;
+  padding: 3px 9px;
   border: 1px solid var(--color-border);
   background: var(--color-card-bg);
   color: var(--color-text-primary);
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.64rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1071,14 +1062,15 @@ body {
 .dashboard-fy-overview-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.75rem;
+  font-size: 0.62rem;
 }
 
 .dashboard-fy-overview-table th,
 .dashboard-fy-overview-table td {
-  padding: 8px 10px;
+  padding: 4px 6px;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
 }
 
 .dashboard-fy-overview-table th {
@@ -1089,6 +1081,21 @@ body {
 
 .dashboard-fy-overview-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.fy-target-input {
+  width: 56px;
+  padding: 2px 5px;
+  font-size: 0.6rem;
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  outline: none;
+}
+
+.fy-target-input:focus {
+  border-color: var(--color-primary);
 }
 
 .calendar-weekdays {

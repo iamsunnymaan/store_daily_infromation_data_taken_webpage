@@ -498,22 +498,13 @@ function getVerifiedSite() {
 }
 
 const dsrReportUnverifiedMessage = document.getElementById("dsrReportUnverifiedMessage");
-const dsrReportStoreInfoCard = document.getElementById("dsrReportStoreInfoCard");
 const dsrReportContent = document.getElementById("dsrReportContent");
 
 function renderReportVerificationState(site) {
   const verified = !!site;
 
   dsrReportUnverifiedMessage?.classList.toggle("hidden", verified);
-  dsrReportStoreInfoCard?.classList.toggle("hidden", !verified);
   dsrReportContent?.classList.toggle("hidden", !verified);
-
-  if (verified) {
-    document.getElementById("reportStoreName").textContent = site.storeName || "—";
-    document.getElementById("reportStoreCodeDisplay").textContent = site.siteCode || "—";
-    document.getElementById("reportStoreManager").textContent = site.sm || "—";
-    document.getElementById("reportStoreAddress").textContent = site.address || "—";
-  }
 
   return verified;
 }
@@ -818,11 +809,6 @@ if (calendarNextBtn) {
   });
 }
 
-const fyYearFilterBtn = document.getElementById("fyYearFilterBtn");
-const fyYearFilterMenu = document.getElementById("fyYearFilterMenu");
-const fyYearFilterLabel = document.getElementById("fyYearFilterLabel");
-const fyTableBody = document.getElementById("fyTableBody");
-
 const FY_MONTH_ORDER = [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3];
 const FY_MONTH_NAMES = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
 
@@ -835,99 +821,215 @@ function fyLabel(startYear) {
   return `FY ${startYear}-${String(startYear + 1).slice(-2)}`;
 }
 
-let fySelectedStartYear = getCurrentFyStartYear();
+const salesFyYearFilterBtn = document.getElementById("salesFyYearFilterBtn");
+const salesFyYearFilterMenu = document.getElementById("salesFyYearFilterMenu");
+const salesFyYearFilterLabel = document.getElementById("salesFyYearFilterLabel");
+const salesFyTableBody = document.getElementById("salesFyTableBody");
 
-async function loadFyCard() {
-  if (!fyTableBody) return;
+let salesFySelectedStartYear = getCurrentFyStartYear();
+
+async function loadSalesFyCard() {
+  if (!salesFyTableBody) return;
 
   const verifiedSite = getVerifiedSite();
-  if (fyYearFilterLabel) fyYearFilterLabel.textContent = fyLabel(fySelectedStartYear);
+  if (salesFyYearFilterLabel) salesFyYearFilterLabel.textContent = fyLabel(salesFySelectedStartYear);
 
   if (!verifiedSite) {
-    fyTableBody.innerHTML = "";
+    salesFyTableBody.innerHTML = "";
     return;
   }
 
   let rows = [];
+  let targets = [];
   try {
-    const response = await fetch(`${API_BASE_URL}/api/dsr-form`);
-    if (response.ok) rows = await response.json();
+    const [dsrResponse, targetResponse] = await Promise.all([
+      fetch(`${API_BASE_URL}/api/dsr-form`),
+      fetch(`${API_BASE_URL}/api/target-master?siteCode=${encodeURIComponent(verifiedSite.siteCode)}`)
+    ]);
+    if (dsrResponse.ok) rows = await dsrResponse.json();
+    if (targetResponse.ok) targets = await targetResponse.json();
     rows = rows.filter((row) => row.storeCode === verifiedSite.siteCode);
   } catch (error) {
-    console.error("Failed to load FY submission history:", error);
+    console.error("Failed to load Sales FY data:", error);
   }
 
-  const statusByDate = new Map();
+  const salesByMonth = new Map();
+  const statsByMonth = new Map();
+
+  function getMonthStats(key) {
+    if (!statsByMonth.has(key)) {
+      statsByMonth.set(key, {
+        totalTransactions: 0,
+        footfall: 0,
+        totalUnitsSold: 0,
+        atvSum: 0,
+        atvCount: 0,
+        uptSum: 0,
+        uptCount: 0,
+        fcSum: 0,
+        fcCount: 0,
+        statusCounts: new Map()
+      });
+    }
+    return statsByMonth.get(key);
+  }
+
   rows.forEach((row) => {
     if (!row.visitDate) return;
-    const isClosed = (row.storeStatus || "").toLowerCase() === "closed";
-    if (isClosed) {
-      statusByDate.set(row.visitDate, "closed");
-    } else if (statusByDate.get(row.visitDate) !== "closed") {
-      statusByDate.set(row.visitDate, "submitted");
+    const key = row.visitDate.slice(0, 7);
+    salesByMonth.set(key, (salesByMonth.get(key) || 0) + (Number(row.todaySale) || 0));
+
+    const stats = getMonthStats(key);
+    stats.totalTransactions += Number(row.totalTransaction) || 0;
+    stats.footfall += Number(row.footfall) || 0;
+    stats.totalUnitsSold += Number(row.totalUnitSold) || 0;
+
+    if (row.atv !== null && row.atv !== undefined) {
+      stats.atvSum += Number(row.atv) || 0;
+      stats.atvCount += 1;
+    }
+    if (row.upt !== null && row.upt !== undefined) {
+      stats.uptSum += Number(row.upt) || 0;
+      stats.uptCount += 1;
+    }
+    if (row.footfallConversion !== null && row.footfallConversion !== undefined) {
+      stats.fcSum += Number(row.footfallConversion) || 0;
+      stats.fcCount += 1;
+    }
+    if (row.salesStatus) {
+      stats.statusCounts.set(row.salesStatus, (stats.statusCounts.get(row.salesStatus) || 0) + 1);
     }
   });
 
-  const today = new Date();
-  const todayIso = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`;
+  function dominantStatus(stats) {
+    let best = null;
+    let bestCount = 0;
+    stats.statusCounts.forEach((count, status) => {
+      if (count > bestCount) {
+        best = status;
+        bestCount = count;
+      }
+    });
+    return best;
+  }
 
-  fyTableBody.innerHTML = "";
+  const targetByMonth = new Map();
+  targets.forEach((t) => {
+    targetByMonth.set(`${t.targetYear}-${pad2(t.targetMonth)}`, Number(t.targetAmount) || 0);
+  });
+
+  salesFyTableBody.innerHTML = "";
 
   FY_MONTH_ORDER.forEach((month, index) => {
-    const year = month >= 4 ? fySelectedStartYear : fySelectedStartYear + 1;
-    const daysInMonth = new Date(year, month, 0).getDate();
+    const year = month >= 4 ? salesFySelectedStartYear : salesFySelectedStartYear + 1;
+    const key = `${year}-${pad2(month)}`;
+    const sales = salesByMonth.get(key) || 0;
+    const lySales = salesByMonth.get(`${year - 1}-${pad2(month)}`) || 0;
+    const target = targetByMonth.get(key);
+    const achieved = target ? `${((sales / target) * 100).toFixed(1)}%` : "—";
 
-    let submitted = 0;
-    let missed = 0;
-    let closed = 0;
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      const iso = `${year}-${pad2(month)}-${pad2(day)}`;
-      if (iso > todayIso) continue;
-      const status = statusByDate.get(iso) || "missed";
-      if (status === "submitted") submitted++;
-      else if (status === "closed") closed++;
-      else missed++;
-    }
+    const stats = statsByMonth.get(key);
+    const totalTransactions = stats ? stats.totalTransactions : 0;
+    const footfall = stats ? stats.footfall : 0;
+    const totalUnitsSold = stats ? stats.totalUnitsSold : 0;
+    const avgAtv = stats && stats.atvCount ? stats.atvSum / stats.atvCount : null;
+    const avgUpt = stats && stats.uptCount ? stats.uptSum / stats.uptCount : null;
+    const avgFc = stats && stats.fcCount ? stats.fcSum / stats.fcCount : null;
+    const salesStatus = stats ? dominantStatus(stats) : null;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${FY_MONTH_NAMES[index]} ${String(year).slice(-2)}</td>
-      <td>${submitted}</td>
-      <td>${missed}</td>
-      <td>${closed}</td>
+      <td>
+        <input type="text" inputmode="decimal" class="fy-target-input" data-year="${year}" data-month="${month}"
+          value="${target ? target : ""}" placeholder="Set target">
+      </td>
+      <td>${sales ? `₹${formatReportNumber(sales)}` : "—"}</td>
+      <td>${achieved}</td>
+      <td>${lySales ? `₹${formatReportNumber(lySales)}` : "—"}</td>
+      <td>${totalTransactions || "—"}</td>
+      <td>${footfall || "—"}</td>
+      <td>${totalUnitsSold || "—"}</td>
+      <td>${avgAtv !== null ? `₹${formatReportNumber(avgAtv)}` : "—"}</td>
+      <td>${avgUpt !== null ? formatReportNumber(avgUpt) : "—"}</td>
+      <td>${avgFc !== null ? `${formatReportNumber(avgFc)}%` : "—"}</td>
+      <td>${escapeHtml(salesStatus) || "—"}</td>
     `;
-    fyTableBody.appendChild(tr);
+    salesFyTableBody.appendChild(tr);
   });
 }
 
-function renderFyYearMenu() {
-  if (!fyYearFilterMenu) return;
+if (salesFyTableBody) {
+  salesFyTableBody.addEventListener("input", (event) => {
+    const input = event.target.closest(".fy-target-input");
+    if (!input) return;
+    let value = input.value.replace(/[^0-9.]/g, "");
+    const firstDotIndex = value.indexOf(".");
+    if (firstDotIndex !== -1) {
+      value = value.slice(0, firstDotIndex + 1) + value.slice(firstDotIndex + 1).replace(/\./g, "");
+    }
+    input.value = value;
+  });
+
+  salesFyTableBody.addEventListener("change", async (event) => {
+    const input = event.target.closest(".fy-target-input");
+    if (!input) return;
+
+    const verifiedSite = getVerifiedSite();
+    if (!verifiedSite) return;
+
+    const amount = parseFloat(input.value);
+    if (Number.isNaN(amount) || amount < 0) {
+      loadSalesFyCard();
+      return;
+    }
+
+    try {
+      await fetch(`${API_BASE_URL}/api/target-master`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          siteCode: verifiedSite.siteCode,
+          targetYear: Number(input.dataset.year),
+          targetMonth: Number(input.dataset.month),
+          targetAmount: amount
+        })
+      });
+    } catch (error) {
+      console.error("Failed to save target:", error);
+    }
+
+    loadSalesFyCard();
+  });
+}
+
+function renderSalesFyYearMenu() {
+  if (!salesFyYearFilterMenu) return;
   const currentFy = getCurrentFyStartYear();
   const years = [currentFy, currentFy - 1, currentFy - 2];
 
-  fyYearFilterMenu.innerHTML = "";
+  salesFyYearFilterMenu.innerHTML = "";
   years.forEach((y) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = fyLabel(y);
     btn.addEventListener("click", () => {
-      fySelectedStartYear = y;
-      fyYearFilterMenu.classList.add("hidden");
-      loadFyCard();
+      salesFySelectedStartYear = y;
+      salesFyYearFilterMenu.classList.add("hidden");
+      loadSalesFyCard();
     });
-    fyYearFilterMenu.appendChild(btn);
+    salesFyYearFilterMenu.appendChild(btn);
   });
 }
 
-if (fyYearFilterBtn) {
-  renderFyYearMenu();
-  fyYearFilterBtn.addEventListener("click", () => {
-    fyYearFilterMenu?.classList.toggle("hidden");
+if (salesFyYearFilterBtn) {
+  renderSalesFyYearMenu();
+  salesFyYearFilterBtn.addEventListener("click", () => {
+    salesFyYearFilterMenu?.classList.toggle("hidden");
   });
   document.addEventListener("click", (event) => {
-    if (!fyYearFilterBtn.contains(event.target) && !fyYearFilterMenu?.contains(event.target)) {
-      fyYearFilterMenu?.classList.add("hidden");
+    if (!salesFyYearFilterBtn.contains(event.target) && !salesFyYearFilterMenu?.contains(event.target)) {
+      salesFyYearFilterMenu?.classList.add("hidden");
     }
   });
 }
@@ -972,34 +1074,6 @@ function renderDsrReportRows(rows) {
     `;
     dsrReportTableBody.appendChild(tr);
   });
-}
-
-function setKpiText(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = value;
-}
-
-function renderDsrKpis(rows) {
-  if (!rows.length) {
-    ["kpiTotalSales", "kpiTotalTransactions", "kpiTotalFootfall", "kpiAvgAtv", "kpiAvgUpt", "kpiAvgConversion", "kpiSubmissions"]
-      .forEach((id) => setKpiText(id, "—"));
-    return;
-  }
-
-  const sum = (key) => rows.reduce((total, row) => total + (Number(row[key]) || 0), 0);
-  const avg = (key) => {
-    const values = rows.map((row) => Number(row[key])).filter((value) => !Number.isNaN(value) && value !== null);
-    if (!values.length) return null;
-    return values.reduce((total, value) => total + value, 0) / values.length;
-  };
-
-  setKpiText("kpiTotalSales", `₹${formatReportNumber(sum("todaySale"))}`);
-  setKpiText("kpiTotalTransactions", formatReportNumber(sum("totalTransaction")));
-  setKpiText("kpiTotalFootfall", formatReportNumber(sum("footfall")));
-  setKpiText("kpiAvgAtv", `₹${formatReportNumber(avg("atv"))}`);
-  setKpiText("kpiAvgUpt", formatReportNumber(avg("upt")));
-  setKpiText("kpiAvgConversion", avg("footfallConversion") !== null ? `${formatReportNumber(avg("footfallConversion"))}%` : "—");
-  setKpiText("kpiSubmissions", String(rows.length));
 }
 
 function splitCsvField(value) {
@@ -1156,7 +1230,6 @@ async function loadDsrReport() {
   const verifiedSite = getVerifiedSite();
   if (!renderReportVerificationState(verifiedSite)) {
     renderDsrReportRows([]);
-    renderDsrKpis([]);
     return;
   }
 
@@ -1176,19 +1249,17 @@ async function loadDsrReport() {
 
     rows.sort((a, b) => (b.visitDate || "").localeCompare(a.visitDate || "") || (b.transactionalId || 0) - (a.transactionalId || 0));
     renderDsrReportRows(rows);
-    renderDsrKpis(rows);
     renderReportAnalytics(rows);
   } catch (error) {
     console.error("Failed to load DSR report:", error);
     renderDsrReportRows([]);
-    renderDsrKpis([]);
   }
 }
 
 document.querySelectorAll('[data-page="dsr-report"]').forEach((link) => {
   link.addEventListener("click", loadDsrReport);
   link.addEventListener("click", loadCalendar);
-  link.addEventListener("click", loadFyCard);
+  link.addEventListener("click", loadSalesFyCard);
 });
 
 sidebarCollapseToggle.addEventListener("click", () => {
