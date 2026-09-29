@@ -14,6 +14,12 @@ remark / submit step:
 
 ![Form page walkthrough](docs/screenshots/form-page-collage.jpg)
 
+The My-Report page: filter header, Sales FY targets/achievement with the
+submission calendar, the FY sales trend chart, reasons/issues analytics, and
+the detailed records table:
+
+![My-Report page walkthrough](docs/screenshots/my-report-collage.jpg)
+
 > Note: the data shown in these screenshots (store name, manager, sales
 > figures, etc.) is sample/demo data used for illustration only.
 
