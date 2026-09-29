@@ -8,21 +8,10 @@ a submission calendar.
 
 ## Screenshots
 
-### Form page — before verification
+The Form page before access verification, right after verification (DSR entry
+workspace), and the department review / remark section further down:
 
-![Store Access form](docs/screenshots/form-page.jpg)
-
-### Form page — after verification
-
-Once the access code and store code are verified, the store's info and the
-full DSR entry workspace (sales KPIs, staff counts, sales/store status,
-reasons, and actions) become available.
-
-![DSR workspace after verification](docs/screenshots/form-page-verified.jpg)
-
-### Form page — department review & remark
-
-![Department review and remark section](docs/screenshots/form-page-department-review.jpg)
+![Form page walkthrough](docs/screenshots/form-page-collage.jpg)
 
 > Note: the data shown in these screenshots (store name, manager, sales
 > figures, etc.) is sample/demo data used for illustration only.
