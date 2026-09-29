@@ -8,8 +8,9 @@ a submission calendar.
 
 ## Screenshots
 
-The Form page before access verification, right after verification (DSR entry
-workspace), and the department review / remark section further down:
+The Form page walk-through: before access verification, right after
+verification (DSR entry workspace), the department review section, and the
+remark / submit step:
 
 ![Form page walkthrough](docs/screenshots/form-page-collage.jpg)
 
