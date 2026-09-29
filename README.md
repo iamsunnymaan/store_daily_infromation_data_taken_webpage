@@ -89,15 +89,49 @@ backend/
 
 ## API overview
 
-| Method | Endpoint              | Description                              |
-|--------|------------------------|-------------------------------------------|
-| POST   | `/api/site-access`     | Verify a store/access code pair           |
-| POST   | `/api/dsr-form`        | Submit a daily sales report                |
-| GET    | `/api/dsr-form`        | List all submitted DSR records            |
-| GET    | `/api/dsr-form/{id}`   | Get a single DSR record by ID              |
+| Method | Endpoint                    | Description                                    |
+|--------|------------------------------|-------------------------------------------------|
+| POST   | `/api/site-access`          | Verify a store/access code pair                |
+| POST   | `/api/dsr-form`              | Submit a daily sales report                    |
+| GET    | `/api/dsr-form`              | List all submitted DSR records                 |
+| GET    | `/api/dsr-form/{id}`         | Get a single DSR record by ID                  |
+| POST   | `/api/target-master`         | Create/update a store's target for a month     |
+| GET    | `/api/target-master`         | List targets (optionally `?siteCode=` filter)  |
 
 ## Notes
 
 - `application.properties` currently contains local development database
   credentials — replace them with your own before deploying, and avoid
   committing real production secrets.
+
+## Process to use the project
+
+1. **Onboard a store.** Add a row for the store in the `Site_master` table
+   (siteCode, storeName, address, manager, and a unique `accessCode`). There's
+   no admin UI for this yet — insert it directly via MySQL or a seed script.
+2. **Start the backend.** Run `mvn spring-boot:run` from `backend/` (see
+   [Setup](#setup)) and open `http://localhost:8080`.
+3. **Verify store access.** On the **Form** page, the store staff enters the
+   current date, the store's **Access Code**, and **Store Code**, then clicks
+   **Verify**. This calls `POST /api/site-access` and unlocks the DSR
+   workspace for that store.
+4. **Submit the daily report.** Staff fill in today's sales, transactions,
+   footfall, units sold, staffing counts, sales/store status, department
+   issues, out-of-stock products, sales-improvement suggestions, and any
+   remarks, then click **Submit DSR**. This is meant to be done once per store
+   per day.
+5. **Set monthly sales targets (optional).** On **My-Report → Sales FY**, click
+   into any month's **Target** cell and enter a value — it saves immediately
+   via `POST /api/target-master` and the **Achieved %** column updates against
+   real submitted sales for that month.
+6. **Review performance.** Switch to **My-Report** to see:
+   - **Sales FY** — month-by-month target vs. actual sales, achievement %,
+     last-year comparison, and other KPIs, alongside the submission calendar.
+   - **Sales Trend** — FY month-wise sales chart.
+   - **Reasons** — top reasons for sales increase/decrease and actions taken.
+   - **Issues** — department issues (filterable by category), out-of-stock
+     products, and sales-improvement suggestions.
+   - **Detailed Records** — every submission for the store, filterable by
+     date, month, or year via the **Filter Header**.
+7. **Repeat daily.** Steps 3–4 repeat each day per store; step 6 is used
+   ongoing by store managers/regional teams to track performance.
